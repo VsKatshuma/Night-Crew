@@ -21,12 +21,8 @@ var mousePos = { x: 0, y: 0 };
 
 // Images
 var sprites = [
-	{
-        image: new Image(),
-        pos: { x: 0, y: 0 }
-    }
+    new Sprite("crosshair.png")
 ];
-sprites[0].image.src = "Images/crosshair.png"
 
 // Handle keyboard events
 document.onkeydown = function (event) {
@@ -460,10 +456,9 @@ function draw() {
     g.font = '14px Helvetica';
     g.fillText(fps + " fps", 6, 16);
 
-	// Draw sprite
+	// Draw sprites
     for (var i = 0; i < sprites.length; i++) {
-        var sprite = sprites[i];
-        g.drawImage(sprite.image, sprite.pos.x, sprite.pos.y);
+        sprites[i].drawTo(g);
     }
 
     requestAnimationFrame(draw);
