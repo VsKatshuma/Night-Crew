@@ -177,6 +177,8 @@ function simplexNoise(xin, yin) {
 var particles = [];
 // Create an array for storing active enemies
 var enemies = [];
+// Create an array for storing health bar effects
+var healthBarEffects = [];
 // Create a grid for storing nearby active background elements
 var doodadInterval = 50;
 var screenSize = Math.max(width, height);
@@ -301,6 +303,11 @@ function draw() {
         particles.push({x: playerX, y: playerY, speedX: Math.cos(theta), speedY: Math.sin(theta), framesAlive: 120});
     }
 
+    // Create health bar animation effects
+    if (Math.random() < 0.07) {
+        healthBarEffects.push({x: width / 2 - 365, y: 40, radius: 8 + (Math.random() * 10), speedX: 1.5 + (Math.random() * 1.25), speedY: -0.15 + (Math.random() * 0.3)});
+    }
+
     // Draw black background
     g.fillStyle = '#000000';
     g.fillRect(0, 0, canvas.width, canvas.height);
@@ -371,6 +378,54 @@ function draw() {
     var playerLocation = locationToCanvas(playerX, playerY);
     g.arc(playerLocation[0], playerLocation[1], 20, 0, 2 * Math.PI, 0);
     g.fill();
+
+    // Draw health bar outline
+    g.fillStyle = '#000000'; // Black
+    g.fillRect(width / 2 - 354, 16, 708, 3); // Top
+    g.fillRect(width / 2 - 354, 19, 3, 42); // Left
+    g.fillRect(width / 2 - 354, 61, 708, 3); // Bottom
+    g.fillRect(width / 2 + 351, 19, 3, 42); // Right
+    g.fillStyle = '#FFFFFF'; // White
+    g.fillRect(width / 2 - 350, 19, 700, 1); // Top
+    g.fillRect(width / 2 - 351, 19, 1, 42); // Left
+    g.fillRect(width / 2 - 350, 60, 700, 1); // Bottom
+    g.fillRect(width / 2 + 350, 19, 1, 42); // Right
+
+    // Draw health bar
+    g.fillStyle = 'rgba(0, 200, 255, 0.75)';
+    g.fillRect(width / 2 - 350, 20, 700, 40);
+
+    // Calculate clipping path for health bar
+    g.save();
+    g.beginPath();
+    g.moveTo(width / 2 - 350, 20);
+    g.lineTo(width / 2 + 349, 20);
+    g.lineTo(width / 2 + 349, 60);
+    g.lineTo(width / 2 - 350, 60);
+    g.lineTo(width / 2 - 350, 20);
+    g.closePath();
+    g.clip();
+
+    // Animate health bar
+    var healthBarEffectIndex = 0;
+    while (healthBarEffectIndex < healthBarEffects.length) {
+        let effect = healthBarEffects[healthBarEffectIndex];
+
+        effect.x += effect.speedX;
+        effect.y += effect.speedY;
+
+        g.fillStyle = 'rgba(100, 255, 255, 0.75)';
+        g.beginPath();
+        g.arc(effect.x, effect.y, effect.radius, 0, 2 * Math.PI, 0);
+        g.fill();
+
+        if (effect.x > width / 2 + 365) {
+            healthBarEffects.splice(healthBarEffectIndex, 1);
+        } else {
+            healthBarEffectIndex++;
+        }
+    }
+    g.restore();
 
     // Calculate frames per second
     var time = Date.now();
