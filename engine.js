@@ -20,10 +20,13 @@ var up, left, down, right = false;
 var mousePos = { x: 0, y: 0 };
 
 // Images
-sprites = {
-	crosshair: new Image()
-};
-sprites.crosshair.src = "Images/crosshair.png"
+var sprites = [
+	{
+        image: new Image(),
+        pos: { x: 0, y: 0 }
+    }
+];
+sprites[0].image.src = "Images/crosshair.png"
 
 // Handle keyboard events
 document.onkeydown = function (event) {
@@ -233,6 +236,10 @@ function draw() {
     if (d || right) {
         direction += 0.1;
     }
+
+    // Handle mouse position
+    sprites[0].pos.x = mousePos.x;
+    sprites[0].pos.y = mousePos.y;
 
     // Update player position based on current direction and speed
     let angle = direction % (2 * Math.PI);
@@ -453,8 +460,11 @@ function draw() {
     g.font = '14px Helvetica';
     g.fillText(fps + " fps", 6, 16);
 
-	// Draw crosshair
-	g.drawImage(sprites.crosshair, mousePos.x, mousePos.y);
+	// Draw sprite
+    for (var i = 0; i < sprites.length; i++) {
+        var sprite = sprites[i];
+        g.drawImage(sprite.image, sprite.pos.x, sprite.pos.y);
+    }
 
     requestAnimationFrame(draw);
 }
