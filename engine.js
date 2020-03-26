@@ -175,6 +175,8 @@ function simplexNoise(xin, yin) {
 
 // Create an array for storing active particle effects
 var particles = [];
+// Create an array for storing active enemies
+var enemies = [];
 // Create a grid for storing nearby active background elements
 var doodadInterval = 50;
 var screenSize = Math.max(width, height);
@@ -194,6 +196,10 @@ var loadZoneLeft = Math.floor(playerX / doodadInterval) * doodadInterval;
 var loadZoneRight = (Math.floor(playerX / doodadInterval) + 1) * doodadInterval;
 var loadZoneUp = Math.floor(playerY / doodadInterval) * doodadInterval;
 var loadZoneDown = (Math.floor(playerY / doodadInterval) + 1) * doodadInterval;
+
+// Fps counter variables
+var fps = 0;
+var timestamps = [];
 
 // ***
 // Main gameplay loop, called with requestAnimationFrame
@@ -261,7 +267,35 @@ function draw() {
         //console.log("Shifted load zone right. New loadZoneRight: ", loadZoneRight);
     }
 
-    // Sometimes floating particles around the player
+    // Create enemies
+    if (Math.random() < 0.033) {
+        let seed = Math.random();
+        let x, y, speedX, speedY = 0;
+        if (seed < 0.25) {
+            x = playerX - (width * 0.6) + (Math.random() * width * 1.2);
+            y = playerY - (height * 0.6);
+            speedX = -1 + (Math.random() * 2);
+            speedY = Math.random();
+        } else if (seed < 0.5) {
+            x = playerX - (width * 0.6);
+            y = playerY - (height * 0.6) + (Math.random() * height * 1.2);
+            speedX = Math.random();
+            speedY = -1 + (Math.random() * 2);
+        } else if (seed < 0.75) {
+            x = playerX - (width * 0.6) + (Math.random() * width * 1.2);
+            y = playerY + (height * 0.6);
+            speedX = -1 + (Math.random() * 2);
+            speedY = -Math.random();
+        } else {
+            x = playerX + (width * 0.6);
+            y = playerY - (height * 0.6) + (Math.random() * height * 1.2);
+            speedX = -Math.random();
+            speedY = -1 + (Math.random() * 2);
+        }
+        enemies.push({x: x, y: y, speedX: speedX * 5, speedY: speedY * 5});
+    }
+
+    // Create floating particles around the player
     if (Math.random() < 0.13) {
         let theta = (2 * Math.PI) * Math.random();
         particles.push({x: playerX, y: playerY, speedX: Math.cos(theta), speedY: Math.sin(theta), framesAlive: 120});
@@ -286,6 +320,27 @@ function draw() {
         }
     }
 
+    // Draw enemies
+    var enemyIndex = 0;
+    while (enemyIndex < enemies.length) {
+        let enemy = enemies[enemyIndex];
+
+        enemy.x += enemy.speedX;
+        enemy.y += enemy.speedY;
+
+        g.fillStyle = '#FFFF00';
+        g.beginPath();
+        let enemyLocation = locationToCanvas(enemy.x, enemy.y);
+        g.arc(enemyLocation[0], enemyLocation[1], 20, 0, 2 * Math.PI, 0);
+        g.fill();
+
+        if (enemy.x < playerX - width || enemy.x > playerX + width || enemy.y < playerY - height || enemy.y > playerY + height) {
+            enemies.splice(enemyIndex, 1);
+        } else {
+            enemyIndex++;
+        }
+    }
+
     // Draw particles
     var particleIndex = 0;
     while (particleIndex < particles.length) {
@@ -297,7 +352,7 @@ function draw() {
         particle.speedY *= 0.99;
         particle.framesAlive -= 1;
 
-        g.fillStyle = "#00CC55";
+        g.fillStyle = '#00CC55';
         g.beginPath();
         let particleLocation = locationToCanvas(particle.x, particle.y);
         g.arc(particleLocation[0], particleLocation[1], 4, 0, 2 * Math.PI, 0);
@@ -306,16 +361,28 @@ function draw() {
         if (particle.framesAlive <= 0) {
             particles.splice(particleIndex, 1);
         } else {
-            particleIndex += 1;
+            particleIndex++;
         }
     }
 
     // Draw player character
-    g.fillStyle = '#AAAAAA';
+    g.fillStyle = '#C0C0C0';
     g.beginPath();
     var playerLocation = locationToCanvas(playerX, playerY);
     g.arc(playerLocation[0], playerLocation[1], 20, 0, 2 * Math.PI, 0);
     g.fill();
+
+    // Calculate frames per second
+    var time = Date.now();
+    timestamps.push(time);
+    while (timestamps[0] < time - 1000) {
+        timestamps.shift();
+    }
+    fps = timestamps.length;
+
+    g.fillStyle = '#00FF00';
+    g.font = '14px Helvetica';
+    g.fillText(fps + " fps", 6, 16);
 
     requestAnimationFrame(draw);
 }
