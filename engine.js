@@ -1,5 +1,6 @@
 
 var canvas = document.getElementById("canvas");
+canvas.style.cursor = "none";
 var g = canvas.getContext("2d");
 
 var width = window.innerWidth;
@@ -16,6 +17,13 @@ var requestAnimationFrame = window.requestAnimationFrame ||
 
 var w, a, s, d = false;
 var up, left, down, right = false;
+var mousePos = { x: 0, y: 0 };
+
+// Images
+sprites = {
+	crosshair: new Image()
+};
+sprites.crosshair.src = "Images/crosshair.png"
 
 // Handle keyboard events
 document.onkeydown = function (event) {
@@ -65,6 +73,12 @@ document.onkeyup = function(event) {
         down = false;
     if (event.code === 'ArrowRight')
         right = false;
+};
+
+document.onmousemove = function(event) {
+    event = event || window.event;
+    mousePos.x = event.clientX;
+    mousePos.y = event.clientY;
 };
 
 // Initialize player location and movement attributes
@@ -438,6 +452,9 @@ function draw() {
     g.fillStyle = '#00FF00';
     g.font = '14px Helvetica';
     g.fillText(fps + " fps", 6, 16);
+
+	// Draw crosshair
+	g.drawImage(sprites.crosshair, mousePos.x, mousePos.y);
 
     requestAnimationFrame(draw);
 }
