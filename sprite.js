@@ -10,9 +10,9 @@ class Sprite {
         this.pos = { x: 0, y: 0 };
     }
 
-    drawTo(canvas) {
+    drawTo(context) {
         if (this.image.complete) {
-            canvas.drawImage(this.image, this.pos.x, this.pos.y);
+            context.drawImage(this.image, this.pos.x, this.pos.y);
         }
         else {
             console.log(this.filepath + " not yet loaded");
