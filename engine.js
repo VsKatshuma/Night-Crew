@@ -17,11 +17,20 @@ var requestAnimationFrame = window.requestAnimationFrame ||
 
 var w, a, s, d = false;
 var up, left, down, right = false;
-var mousePos = { x: 0, y: 0 };
 
-// Images
-var sprites = [
-    new Sprite("crosshair.png")
+var mouse = {
+    x: 0,
+    y: 0,
+    pressed: false,
+    sprite: new Sprite("crosshair.png")
+};
+
+function anglee(x1, y1, x2, y2) {
+    return (Math.PI/2) - Math.atan2(y2-y1, x2-x1);
+}
+
+var projectiles = [
+    new Projectile("crosshair.png", 0, 0, 2, 5, 2000)
 ];
 
 // Handle keyboard events
@@ -74,10 +83,24 @@ document.onkeyup = function(event) {
         right = false;
 };
 
+// Handle mouse presses and movement
+
+document.onmousedown = function(event) {
+    event = event || window.event;
+    mouse.pressed = true;
+}
+
+document.onmouseup = function(event) {
+    event = event || window.event;
+    mouse.pressed = false;
+}
+
 document.onmousemove = function(event) {
     event = event || window.event;
-    mousePos.x = event.clientX;
-    mousePos.y = event.clientY;
+    mouse.x = event.clientX;
+    mouse.y = event.clientY;
+    mouse.sprite.pos.x = mouse.x
+    mouse.sprite.pos.y = mouse.y
 };
 
 // Initialize player location and movement attributes
@@ -232,10 +255,6 @@ function draw() {
     if (d || right) {
         direction += 0.1;
     }
-
-    // Handle mouse position
-    sprites[0].pos.x = mousePos.x;
-    sprites[0].pos.y = mousePos.y;
 
     // Update player position based on current direction and speed
     let angle = direction % (2 * Math.PI);
@@ -456,9 +475,24 @@ function draw() {
     g.font = '14px Helvetica';
     g.fillText(fps + " fps", 6, 16);
 
-	// Draw sprites
-    for (var i = 0; i < sprites.length; i++) {
-        sprites[i].drawTo(g);
+    // Draw mouse
+    mouse.sprite.drawTo(g);
+
+    // Spawn weapon projectiles on mouse press
+    if (mouse.pressed) {
+        theta = anglee(playerLocation[0], playerLocation[1], mouse.x, mouse.y);
+        xspeed = 10 * Math.sin(theta);
+        yspeed = 10 * Math.cos(theta);
+        projectiles.push(new Projectile("crosshair.png", playerLocation[0], playerLocation[1],
+                                        xspeed, yspeed, 1000));
+        mouse.pressed = false;
+    }
+
+    // Draw projectiles
+    for (var i = 0; i < projectiles.length; i++) {
+        if (!projectiles[i].update(g, time)) {
+            projectiles.splice(i--, 1);
+        }
     }
 
     requestAnimationFrame(draw);
