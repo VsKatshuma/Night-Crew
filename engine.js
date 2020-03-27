@@ -103,6 +103,10 @@ document.onmousemove = function(event) {
     mouse.sprite.pos.y = mouse.y
 };
 
+var weaponProjectile = new Projectile("crosshair.png", 0, 0, 10, 10, 1500);
+var weapon = new Weapon(weaponProjectile, 1, 0, 250);
+
+
 // Initialize player location and movement attributes
 var playerX = -0.5;
 var playerY = -0.5;
@@ -479,18 +483,19 @@ function draw() {
     mouse.sprite.drawTo(g);
 
     // Spawn weapon projectiles on mouse press
-    if (mouse.pressed) {
+    weapon.load(time);
+    if (mouse.pressed && weapon.ready) {
         theta = anglee(playerLocation[0], playerLocation[1], mouse.x, mouse.y);
-        xspeed = 10 * Math.sin(theta);
-        yspeed = 10 * Math.cos(theta);
-        projectiles.push(new Projectile("crosshair.png", playerLocation[0], playerLocation[1],
-                                        xspeed, yspeed, 1000));
-        mouse.pressed = false;
+        let direction = { x: Math.sin(theta), y: Math.cos(theta) }; 
+        let proj = weapon.shoot(time, direction);
+        proj.setPosition(playerLocation[0], playerLocation[1]);
+        projectiles.push(proj);
     }
 
     // Draw projectiles
     for (var i = 0; i < projectiles.length; i++) {
-        if (!projectiles[i].update(g, time)) {
+        var proj = projectiles[i];
+        if (!proj.update(g, time)) {
             projectiles.splice(i--, 1);
         }
     }
