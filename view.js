@@ -48,11 +48,12 @@ class View {
     // Draws a rectangle to the viewport
     // The object must be a Rectangle instance
     drawRectangle(rect, color) {
-        gContext.beginPath();
-        gContext.lineWidth = "2";
-        gContext.strokeStyle = color ? color : "red";
-        gContext.rect(rect.x, rext.y, rext.width, rext.height);
-        gContext.stroke();
+        var viewPos = this.worldToView(rect);
+        this.gContext.beginPath();
+        this.gContext.lineWidth = "2";
+        this.gContext.strokeStyle = color ? color : "red";
+        this.gContext.rect(viewPos.x, viewPos.y, rect.width, rect.height);
+        this.gContext.stroke();
     }
 
     worldToView(worldPos) {
