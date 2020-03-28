@@ -5,13 +5,16 @@ class Rectangle {
         this.y = y;
         this.width = width;
         this.height = height;
+        this.color = "red";
     }
 
-    // SO 2752349
     intersect(other) {
-       return !(other.left > this.right ||
-                other.right < this.left ||
-                other.top > this.bottom ||
-                other.bottom < this.top);
+        if (this.width <= 0 || this.height <= 0 || other.width <= 0 || other.height <= 0) {
+            return false;
+        }
+        return !(this.x > other.x + other.width ||
+                 this.x + this.width < other.x  ||
+                 this.y + this.height < other.y ||
+                 this.y > other.y + other.height);
     }
 }

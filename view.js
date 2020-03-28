@@ -53,9 +53,10 @@ class View {
         var viewPos = this.worldToView(rect);
         this.gContext.beginPath();
         this.gContext.lineWidth = "2";
-        this.gContext.strokeStyle = color ? color : "red";
+        this.gContext.strokeStyle = color ? color : rect.color;
         this.gContext.rect(viewPos.x, viewPos.y, rect.width, rect.height);
         this.gContext.stroke();
+        rect.color = "red"; // DEBUG
     }
 
     worldToView(worldPos) {
