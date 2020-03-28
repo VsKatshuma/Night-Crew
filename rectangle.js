@@ -15,4 +15,3 @@ class Rectangle {
                 other.bottom < this.top);
     }
 }
-

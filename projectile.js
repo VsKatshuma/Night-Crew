@@ -10,7 +10,7 @@ class Projectile {
         var t = lifetime;
         if (t > 10000) { t = 10000; }
         else if (t <= 0) { t = 1; }
-        this.heart = new Destroyable(t)
+        this.heart = new Destroyable(t);
     }
 
     clone() {
@@ -39,8 +39,6 @@ class Projectile {
     update(now) {
         this.move(this.speed);
         this.heart.tick(now);
-        return this.heart.alive
+        return this.heart.alive;
     }
-
 }
-

@@ -3,11 +3,9 @@ class Collidable {
     constructor(base) {
         if (base instanceof Rectangle) {
             this.rect = base;
-        }
-        else if (base instanceof Sprite) {
+        } else if (base instanceof Sprite) {
             this.useSprite(base);
-        }
-        else {
+        } else {
             this.rect = new Rectangle(0, 0, 0, 0);
         }
     }
@@ -33,12 +31,11 @@ class Collidable {
         context.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
         context.stroke();
     }
-
 }
 
 class Damageable {
     constructor(health, rattle) {
-        this.health = health
+        this.health = health;
         this.rattle = rattle;
         this.rattled = false;
     }
@@ -48,11 +45,11 @@ class Damageable {
         if (this.health < 0) {
             this.health = 0;
             if (!this.rattled) {
-                this.rattle()
-                this.rattled = true
+                this.rattle();
+                this.rattled = true;
             }
         }
-        return this.health
+        return this.health;
     }
 }
 
@@ -67,11 +64,8 @@ class Destroyable {
     tick(now) {
         if (!this.birthTime) {
             this.birthTime = now;
-        }
-        else if ((now - this.birthTime) > this.lifetime) {
+        } else if (now - this.birthTime > this.lifetime) {
             this.alive = false;
         }
     }
-
 }
-

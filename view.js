@@ -10,7 +10,7 @@ class View {
 
         // Hide cursor and synchronize canvas size
         this.canvas.style.cursor = "none";
-        this.updateSize()
+        this.updateSize();
 
         // Initialize mouse
         this.mouse = {
@@ -28,18 +28,21 @@ class View {
         this.canvas.height = this.height;
     }
 
-    // Draws and object to viewport
+    // Draws an object to viewport
     // The object must have both sprite and pos members
     draw(drawable) {
         drawable.sprite.pos = this.worldToView(drawable.pos);
 
-        if (drawable instanceof Monster) {
-            g.shadowColor = '#FF8800';
-            g.shadowBlur = 25;
-        } // TODO maybe have the above somewhere else
+        if (drawable instanceof Monster) { // TODO: Can this be done somewhere else?
+            this.gContext.shadowColor = '#FF8800';
+            this.gContext.shadowBlur = 25;
+        } else if (drawable instanceof Player) {
+            this.gContext.shadowColor = '#0000FF';
+            this.gContext.shadowBlur = 25;
+        }
 
         drawable.sprite.drawTo(this.gContext);
-        g.shadowColor = 'rgba(0, 0, 0, 0)';
+        this.gContext.shadowColor = 'rgba(0, 0, 0, 0)';
     }
 
     worldToView(worldPos) {
@@ -60,6 +63,4 @@ class View {
         this.mouse.sprite.pos.y = this.mouse.y;
         this.mouse.sprite.drawTo(this.gContext);
     }
-
 };
-

@@ -25,10 +25,8 @@ class Weapon {
     }
 
     load(now) {
-        if ((now - this.fireTime) > this.rate) {
+        if (now - this.fireTime > this.rate) {
             this.ready = true;
         }
     }
-
 }
-

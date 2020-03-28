@@ -1,6 +1,6 @@
 
 var view = new View(document.getElementById("canvas"));
-var g = view.gContext; // compatible with earlier code
+var g = view.gContext; // Fetch Context2D from View class
 
 var requestAnimationFrame = window.requestAnimationFrame ||
                           window.mozRequestAnimationFrame ||
@@ -10,10 +10,6 @@ var requestAnimationFrame = window.requestAnimationFrame ||
 
 var w, a, s, d = false;
 var up, left, down, right = false;
-
-function weaponAngle(x1, y1, x2, y2) {
-    return (Math.PI / 2) - Math.atan2(y2 - y1, x2 - x1);
-}
 
 // Handle keyboard events
 document.onkeydown = function (event) {
@@ -82,17 +78,23 @@ document.onmousemove = function(event) {
     view.mouse.y = event.clientY;
 };
 
-var player = new Monster("wisp1.png");
+// Initialize player
+var player = new Player("wisp1.png");
 player.pos = { x: -0.5, y: -0.5 };
 
+// Initialize player movement attributes
+var direction = Math.PI * 1.8;
+var speed = 0;
+
+function weaponAngle(x1, y1, x2, y2) {
+    return (Math.PI / 2) - Math.atan2(y2 - y1, x2 - x1);
+}
+
+// Create arrays for storing game objects
 var gameObjects = {
     enemies: [],
     projectiles: []
 };
-
-// Initialize player location and movement attributes
-var direction = Math.PI * 1.8;
-var speed = 0;
 
 // Create an array for storing active particle effects
 var particles = [];
@@ -278,6 +280,7 @@ function draw() {
         particle.framesAlive -= 1;
 
         g.fillStyle = '#00CC55';
+        g.globalAlpha = particle.framesAlive / 120; // Particles emanating from the player have a lifespan of 2 seconds
         g.beginPath();
         let particleLocation = view.worldToView(particle);
         g.arc(particleLocation.x, particleLocation.y, 4, 0, 2 * Math.PI, 0);
@@ -287,6 +290,31 @@ function draw() {
             particles.splice(particleIndex, 1);
         } else {
             particleIndex++;
+        }
+    }
+    g.globalAlpha = 1.0;
+
+    // Spawn weapon projectiles on mouse press
+    player.weapon.load(time);
+    if (view.mouse.pressed && player.weapon.ready) {
+        let mouse = view.viewToWorld(view.mouse);
+        let theta = weaponAngle(player.pos.x, player.pos.y, mouse.x, mouse.y);
+        let direction = { x: Math.sin(theta), y: Math.cos(theta) };
+        let proj = player.weapon.shoot(time, direction);
+        proj.setPosition(player.pos.x, player.pos.y);
+        gameObjects.projectiles.push(proj);
+    }
+
+    // Update and draw rest of the game objects
+    for (var type in gameObjects) {
+        let array = gameObjects[type];
+        for (var i = 0; i < array.length; i++) {
+            let item = array[i];
+            if (item.update(time)) {
+                view.draw(item);
+            } else {
+                array.splice(i--, 1);
+            }
         }
     }
 
@@ -341,6 +369,9 @@ function draw() {
     }
     g.restore();
 
+    // Draw mouse
+    view.drawMouse();
+
     // Calculate frames per second
     var time = Date.now();
     timestamps.push(time);
@@ -352,35 +383,6 @@ function draw() {
     g.fillStyle = '#00FF00';
     g.font = '14px Helvetica';
     g.fillText(fps + " fps", 6, 16);
-
-    // Draw mouse
-    view.drawMouse();
-
-    // Spawn weapon projectiles on mouse press
-    player.weapon.load(time);
-    if (view.mouse.pressed && player.weapon.ready) {
-        let mouse = view.viewToWorld(view.mouse);
-        let theta = weaponAngle(player.pos.x, player.pos.y, mouse.x, mouse.y);
-        let direction = { x: Math.sin(theta), y: Math.cos(theta) };
-        let proj = player.weapon.shoot(time, direction);
-        proj.setPosition(player.pos.x, player.pos.y);
-        gameObjects.projectiles.push(proj);
-    }
-
-    // Update and draw rest of the game objects
-    for (let key in gameObjects) {
-
-        let array = gameObjects[key];
-        for (let i = 0; i < array.length; i++) {
-            let item = array[i];
-            if (item.update(time)) {
-                view.draw(item);
-            }
-            else {
-                array.splice(i--, 1);
-            }
-        }
-    }
 
     requestAnimationFrame(draw);
 }
