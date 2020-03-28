@@ -1,43 +1,32 @@
 
 class Projectile {
-    constructor(filename, xpos, ypos, xspeed, yspeed, lifetime) {
-        this.sprite = new Sprite(filename);
-        this.speed = {x: xspeed, y: yspeed};
-        this.pos = {x: xpos, y: ypos};
-        this.body = new Collidable(this.sprite);
+    constructor(filename, pos, speed, lifetime) {
+        this.phys = new Movable(pos, speed);
+        this.body = new Collidable();
+        this.sprite = new Sprite(filename, () => { this.body.useSprite(this.sprite) });
 
         // Protection against undying projectiles
         var t = lifetime;
         if (t > 10000) { t = 10000; }
         else if (t <= 0) { t = 1; }
         this.heart = new Destroyable(t);
+
+        this.phys.onMove = (pos) => {
+            this.body.pos = pos;
+        };
     }
 
     clone() {
         return new Projectile(
             this.sprite.filename,
-            this.pos.x,
-            this.pos.y,
-            this.speed.x,
-            this.speed.y,
+            {x: this.phys.pos.x, y: this.phys.pos.y},
+            {x: this.phys.speed.x, y: this.phys.speed.y},
             this.heart.lifetime
         );
     }
 
-    setPosition(x, y) {
-        this.pos.x = x;
-        this.pos.y = y;
-        this.sprite.pos.x = this.pos.x;
-        this.sprite.pos.y = this.pos.y;
-        this.body.setPosition(x, y);
-    }
-
-    move(delta) {
-        this.setPosition(this.pos.x + delta.x, this.pos.y + delta.y);
-    }
-
     update(now) {
-        this.move(this.speed);
+        this.phys.move();
         this.heart.tick(now);
         return this.heart.alive;
     }

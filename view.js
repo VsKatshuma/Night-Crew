@@ -29,16 +29,18 @@ class View {
     }
 
     // Draws an object to viewport
-    // The object must have both sprite and pos members
+    // The object must have both sprite and phys members
     drawSprite(drawable) {
-        drawable.sprite.pos = this.worldToView(drawable.pos);
+        drawable.sprite.pos = this.worldToView(drawable.phys.pos);
 
         if (drawable instanceof Monster) { // TODO: Can this be done somewhere else?
             this.gContext.shadowColor = '#FF8800';
             this.gContext.shadowBlur = 25;
+	/*
         } else if (drawable instanceof Player) {
             this.gContext.shadowColor = '#0000FF';
             this.gContext.shadowBlur = 25;
+	*/
         }
 
         drawable.sprite.drawTo(this.gContext);

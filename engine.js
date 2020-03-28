@@ -79,8 +79,7 @@ document.onmousemove = function(event) {
 };
 
 // Initialize player
-var player = new Player("wisp1.png");
-player.pos = { x: 0, y: 0 };
+var player = new Monster("wisp1.png");
 
 // Create arrays for storing game objects
 var gameObjects = {
@@ -110,16 +109,16 @@ for (var i = 0; i < doodadGridSize; i++) {
 
 for (var y = 0; y < doodadGridSize; y++) {
     for (var x = 0; x < doodadGridSize; x++) {
-        doodadGrid[y][x] = simplexNoise(((Math.floor(player.pos.x / doodadInterval) + x) * doodadInterval),
-                                        ((Math.floor(player.pos.y / doodadInterval) + y) * doodadInterval));
+        doodadGrid[y][x] = simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + x) * doodadInterval),
+                                        ((Math.floor(player.phys.pos.y / doodadInterval) + y) * doodadInterval));
     }
 }
 
 // Define a border around player character for unloading and loading background elements
-var loadZoneLeft = Math.floor(player.pos.x / doodadInterval) * doodadInterval;
-var loadZoneRight = (Math.floor(player.pos.x / doodadInterval) + 1) * doodadInterval;
-var loadZoneUp = Math.floor(player.pos.y / doodadInterval) * doodadInterval;
-var loadZoneDown = (Math.floor(player.pos.y / doodadInterval) + 1) * doodadInterval;
+var loadZoneLeft = Math.floor(player.phys.pos.x / doodadInterval) * doodadInterval;
+var loadZoneRight = (Math.floor(player.phys.pos.x / doodadInterval) + 1) * doodadInterval;
+var loadZoneUp = Math.floor(player.phys.pos.y / doodadInterval) * doodadInterval;
+var loadZoneDown = (Math.floor(player.phys.pos.y / doodadInterval) + 1) * doodadInterval;
 
 // Fps counter variables
 var fps = 0;
@@ -164,40 +163,40 @@ function draw() {
             right = false;
         }
         if (up && right) {
-            player.speed.y = player.speed.y > -7.7 ? Math.max(player.speed.y - 0.385, -7.7) : Math.min(player.speed.y + 0.15, -7.7);
-            player.speed.x = player.speed.x < 7.7 ? Math.min(player.speed.x + 0.385, 7.7) : Math.max(player.speed.x - 0.15, 7.7);
+            player.phys.speed.y = player.phys.speed.y > -7.7 ? Math.max(player.phys.speed.y - 0.385, -7.7) : Math.min(player.phys.speed.y + 0.15, -7.7);
+            player.phys.speed.x = player.phys.speed.x < 7.7 ? Math.min(player.phys.speed.x + 0.385, 7.7) : Math.max(player.phys.speed.x - 0.15, 7.7);
             movedUp = true;
             movedRight = true;
         } else if (right && down) {
-            player.speed.x = player.speed.x < 7.7 ? Math.min(player.speed.x + 0.385, 7.7) : Math.max(player.speed.x - 0.15, 7.7);
-            player.speed.y = player.speed.y < 7.7 ? Math.min(player.speed.y + 0.385, 7.7) : Math.max(player.speed.y - 0.15, 7.7);
+            player.phys.speed.x = player.phys.speed.x < 7.7 ? Math.min(player.phys.speed.x + 0.385, 7.7) : Math.max(player.phys.speed.x - 0.15, 7.7);
+            player.phys.speed.y = player.phys.speed.y < 7.7 ? Math.min(player.phys.speed.y + 0.385, 7.7) : Math.max(player.phys.speed.y - 0.15, 7.7);
             movedRight = true;
             movedDown = true;
         } else if (down && left) {
-            player.speed.y = player.speed.y < 7.7 ? Math.min(player.speed.y + 0.385, 7.7) : Math.max(player.speed.y - 0.15, 7.7);
-            player.speed.x = player.speed.x > -7.7 ? Math.max(player.speed.x - 0.385, -7.7) : Math.min(player.speed.x + 0.15, -7.7);
+            player.phys.speed.y = player.phys.speed.y < 7.7 ? Math.min(player.phys.speed.y + 0.385, 7.7) : Math.max(player.phys.speed.y - 0.15, 7.7);
+            player.phys.speed.x = player.phys.speed.x > -7.7 ? Math.max(player.phys.speed.x - 0.385, -7.7) : Math.min(player.phys.speed.x + 0.15, -7.7);
             movedDown = true;
             movedLeft = true;
         } else if (left && up) {
-            player.speed.x = player.speed.x > -7.7 ? Math.max(player.speed.x - 0.385, -7.7) : Math.min(player.speed.x + 0.15, -7.7);
-            player.speed.y = player.speed.y > -7.7 ? Math.max(player.speed.y - 0.385, -7.7) : Math.min(player.speed.y + 0.15, -7.7);
+            player.phys.speed.x = player.phys.speed.x > -7.7 ? Math.max(player.phys.speed.x - 0.385, -7.7) : Math.min(player.phys.speed.x + 0.15, -7.7);
+            player.phys.speed.y = player.phys.speed.y > -7.7 ? Math.max(player.phys.speed.y - 0.385, -7.7) : Math.min(player.phys.speed.y + 0.15, -7.7);
             movedLeft = true;
             movedUp = true;
         } else {
             if (up) {
-                player.speed.y = Math.max(player.speed.y - 0.5, -10);
+                player.phys.speed.y = Math.max(player.phys.speed.y - 0.5, -10);
                 movedUp = true;
             }
             if (left) {
-                player.speed.x = Math.max(player.speed.x - 0.5, -10);
+                player.phys.speed.x = Math.max(player.phys.speed.x - 0.5, -10);
                 movedLeft = true;
             }
             if (down) {
-                player.speed.y = Math.min(player.speed.y + 0.5, 10);
+                player.phys.speed.y = Math.min(player.phys.speed.y + 0.5, 10);
                 movedDown = true;
             }
             if (right) {
-                player.speed.x = Math.min(player.speed.x + 0.5, 10);
+                player.phys.speed.x = Math.min(player.phys.speed.x + 0.5, 10);
                 movedRight = true;
             }
         }
@@ -205,51 +204,47 @@ function draw() {
 
     // Apply friction
     if (!movedUp) {
-        if (player.speed.y < 0) {
-            player.speed.y = Math.min(player.speed.y + 0.15, 0);
+        if (player.phys.speed.y < 0) {
+            player.phys.speed.y = Math.min(player.phys.speed.y + 0.15, 0);
         }
     }
     if (!movedLeft) {
-        if (player.speed.x < 0) {
-            player.speed.x = Math.min(player.speed.x + 0.15, 0);
+        if (player.phys.speed.x < 0) {
+            player.phys.speed.x = Math.min(player.phys.speed.x + 0.15, 0);
         }
     }
     if (!movedDown) {
-        if (player.speed.y > 0) {
-            player.speed.y = Math.max(player.speed.y - 0.15, 0);
+        if (player.phys.speed.y > 0) {
+            player.phys.speed.y = Math.max(player.phys.speed.y - 0.15, 0);
         }
     }
     if (!movedRight) {
-        if (player.speed.x > 0) {
-            player.speed.x = Math.max(player.speed.x - 0.15, 0);
+        if (player.phys.speed.x > 0) {
+            player.phys.speed.x = Math.max(player.phys.speed.x - 0.15, 0);
         }
     }
 
-    // Update player's position based on speed
-    player.pos.x += player.speed.x;
-    player.pos.y += player.speed.y;
-
     // Follow player's position with the view
-    view.x = player.pos.x - view.width / 2;
-    view.y = player.pos.y - view.height / 2;
+    view.x = player.phys.pos.x - view.width / 2;
+    view.y = player.phys.pos.y - view.height / 2;
 
     // Unload and load background elements if necessary
-    if (player.pos.y < loadZoneUp) {
+    if (player.phys.pos.y < loadZoneUp) {
         let loadArray = new Array(doodadGridSize);
         for (var x = 0; x < doodadGridSize; x++) {
-            loadArray[x] = simplexNoise(((Math.floor(player.pos.x / doodadInterval) + x) * doodadInterval),
-                                        (Math.floor(player.pos.y / doodadInterval) * doodadInterval));
+            loadArray[x] = simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + x) * doodadInterval),
+                                        (Math.floor(player.phys.pos.y / doodadInterval) * doodadInterval));
         }
         doodadGrid.pop();
         doodadGrid.unshift(loadArray);
         loadZoneUp -= doodadInterval;
         loadZoneDown -= doodadInterval;
         //console.log("Shifted load zone up. New loadZoneUp: ", loadZoneUp);
-    } else if (player.pos.y > loadZoneDown) {
+    } else if (player.phys.pos.y > loadZoneDown) {
         let loadArray = new Array(doodadGridSize);
         for (var x = 0; x < doodadGridSize; x++) {
-            loadArray[x] = simplexNoise(((Math.floor(player.pos.x / doodadInterval) + x) * doodadInterval),
-                                        ((Math.floor(player.pos.y / doodadInterval) + (doodadGridSize - 1)) * doodadInterval));
+            loadArray[x] = simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + x) * doodadInterval),
+                                        ((Math.floor(player.phys.pos.y / doodadInterval) + (doodadGridSize - 1)) * doodadInterval));
         }
         doodadGrid.shift();
         doodadGrid.push(loadArray);
@@ -257,20 +252,20 @@ function draw() {
         loadZoneDown += doodadInterval;
         //console.log("Shifted load zone down. New loadZoneDown: ", loadZoneDown);
     }
-    if (player.pos.x < loadZoneLeft) {
+    if (player.phys.pos.x < loadZoneLeft) {
         for (var y = 0; y < doodadGridSize; y++) {
             doodadGrid[y].pop();
-            doodadGrid[y].unshift(simplexNoise( (Math.floor(player.pos.x / doodadInterval) * doodadInterval),
-                                                ((Math.floor(player.pos.y / doodadInterval) + y) * doodadInterval)));
+            doodadGrid[y].unshift(simplexNoise( (Math.floor(player.phys.pos.x / doodadInterval) * doodadInterval),
+                                                ((Math.floor(player.phys.pos.y / doodadInterval) + y) * doodadInterval)));
         }
         loadZoneLeft -= doodadInterval;
         loadZoneRight -= doodadInterval;
         //console.log("Shifted load zone left. New loadZoneLeft: ", loadZoneLeft);
-    } else if (player.pos.x > loadZoneRight) {
+    } else if (player.phys.pos.x > loadZoneRight) {
         for (var y = 0; y < doodadGridSize; y++) {
             doodadGrid[y].shift();
-            doodadGrid[y].push(simplexNoise(((Math.floor(player.pos.x / doodadInterval) + (doodadGridSize - 1)) * doodadInterval),
-                                            ((Math.floor(player.pos.y / doodadInterval) + y) * doodadInterval)));
+            doodadGrid[y].push(simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + (doodadGridSize - 1)) * doodadInterval),
+                                            ((Math.floor(player.phys.pos.y / doodadInterval) + y) * doodadInterval)));
         }
         loadZoneLeft += doodadInterval;
         loadZoneRight += doodadInterval;
@@ -282,36 +277,36 @@ function draw() {
         let seed = Math.random();
         let x, y, speedX, speedY = 0;
         if (seed < 0.25) {
-            x = player.pos.x - (view.width * 0.6) + (Math.random() * view.width * 1.2);
-            y = player.pos.y - (view.height * 0.6);
+            x = player.phys.pos.x - (view.width * 0.6) + (Math.random() * view.width * 1.2);
+            y = player.phys.pos.y - (view.height * 0.6);
             speedX = -1 + (Math.random() * 2);
             speedY = Math.random();
         } else if (seed < 0.5) {
-            x = player.pos.x - (view.width * 0.6);
-            y = player.pos.y - (view.height * 0.6) + (Math.random() * view.height * 1.2);
+            x = player.phys.pos.x - (view.width * 0.6);
+            y = player.phys.pos.y - (view.height * 0.6) + (Math.random() * view.height * 1.2);
             speedX = Math.random();
             speedY = -1 + (Math.random() * 2);
         } else if (seed < 0.75) {
-            x = player.pos.x - (view.width * 0.6) + (Math.random() * view.width * 1.2);
-            y = player.pos.y + (view.height * 0.6);
+            x = player.phys.pos.x - (view.width * 0.6) + (Math.random() * view.width * 1.2);
+            y = player.phys.pos.y + (view.height * 0.6);
             speedX = -1 + (Math.random() * 2);
             speedY = -Math.random();
         } else {
-            x = player.pos.x + (view.width * 0.6);
-            y = player.pos.y - (view.height * 0.6) + (Math.random() * view.height * 1.2);
+            x = player.phys.pos.x + (view.width * 0.6);
+            y = player.phys.pos.y - (view.height * 0.6) + (Math.random() * view.height * 1.2);
             speedX = -Math.random();
             speedY = -1 + (Math.random() * 2);
         }
         var mon = new Monster("wisp2.png", 10);
-        mon.speed = { x: (speedX + 0.1) * 5, y: (speedY + 0.1) * 5 };
-        mon.pos = { x: x, y: y };
+        mon.phys.speed = { x: (speedX + 0.1) * 5, y: (speedY + 0.1) * 5 };
+        mon.phys.pos = { x: x, y: y };
         gameObjects.enemies.push(mon);
     }
 
     // Create floating particles around the player
     if (Math.random() < 0.13) {
         let theta = (2 * Math.PI) * Math.random();
-        particles.push({x: player.pos.x, y: player.pos.y, speedX: Math.cos(theta), speedY: Math.sin(theta), framesAlive: 120});
+        particles.push({x: player.phys.pos.x, y: player.phys.pos.y, speedX: Math.cos(theta), speedY: Math.sin(theta), framesAlive: 120});
     }
 
     // Create health bar animation effects
@@ -329,8 +324,8 @@ function draw() {
             if (doodadGrid[y][x] > 0.5) {
                 // Shift background elements towards the top-left corner, since their "real" top-left corner is at the middle of the screen
                 let doodadLocation = view.worldToView({
-                    x: ((Math.floor(player.pos.x / doodadInterval) + x) * doodadInterval) - (screenSize * 0.6),
-                    y: ((Math.floor(player.pos.y / doodadInterval) + y) * doodadInterval) - (screenSize * 0.6)
+                    x: ((Math.floor(player.phys.pos.x / doodadInterval) + x) * doodadInterval) - (screenSize * 0.6),
+                    y: ((Math.floor(player.phys.pos.y / doodadInterval) + y) * doodadInterval) - (screenSize * 0.6)
                 });
                 g.fillRect(doodadLocation.x, doodadLocation.y, 25, 25);
             }
@@ -340,10 +335,10 @@ function draw() {
     // Destroy enemies if they wander too far
     for (let i = 0; i < gameObjects.enemies.length; i++) {
         let enemy = gameObjects.enemies[i];
-        if (enemy.pos.x < player.pos.x - view.width ||
-            enemy.pos.x > player.pos.x + view.width ||
-            enemy.pos.y < player.pos.y - view.height ||
-            enemy.pos.y > player.pos.y + view.height) {
+        if (enemy.phys.pos.x < player.phys.pos.x - view.width ||
+            enemy.phys.pos.x > player.phys.pos.x + view.width ||
+            enemy.phys.pos.y < player.phys.pos.y - view.height ||
+            enemy.phys.pos.y > player.phys.pos.y + view.height) {
                 gameObjects.enemies.splice(i--, 1);
         }
     }
@@ -378,10 +373,10 @@ function draw() {
     player.weapon.load(time);
     if (view.mouse.pressed && player.weapon.ready) {
         let mouse = view.viewToWorld(view.mouse);
-        let theta = weaponAngle(player.pos.x, player.pos.y, mouse.x, mouse.y);
+        let theta = weaponAngle(player.phys.pos.x, player.phys.pos.y, mouse.x, mouse.y);
         let direction = { x: Math.sin(theta), y: Math.cos(theta) };
         let proj = player.weapon.shoot(time, direction);
-        proj.setPosition(player.pos.x, player.pos.y);
+        proj.phys.moveTo(player.phys.pos);
         gameObjects.projectiles.push(proj);
     }
 
@@ -392,14 +387,17 @@ function draw() {
             let item = array[i];
             if (item.update(time)) {
                 view.drawSprite(item);
+                view.drawRectangle(item.body.rect);
             } else {
                 array.splice(i--, 1);
             }
         }
     }
 
-    // Draw player character
+    // Update and draw player character
+    player.update(time);
     view.drawSprite(player);
+    view.drawRectangle(player.body.rect);
 
     // Draw health bar outline
     g.fillStyle = '#000000'; // Black

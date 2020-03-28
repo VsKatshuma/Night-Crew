@@ -4,7 +4,7 @@ class Collidable {
         if (base instanceof Rectangle) {
             this.rect = base;
         } else if (base instanceof Sprite) {
-            this.useSprite(base);
+            // this.useSprite(base);
         } else {
             this.rect = new Rectangle(0, 0, 0, 0);
         }
@@ -19,9 +19,9 @@ class Collidable {
         );
     }
 
-    setPosition(x, y) {
-        this.rect.x = x;
-        this.rect.y = y;
+    set pos(pos) {
+        this.rect.x = pos.x;
+        this.rect.y = pos.y;
     }
 
 }
@@ -64,18 +64,25 @@ class Destroyable {
 }
 
 class Movable {
-    constructor(initialPos) {
-        this.x = initialPos.x;
-        this.y = initialPos.y;
+    constructor(pos, speed) {
+        this.pos = pos ? pos : {x: 0, y: 0};
+        this.speed = speed ? speed : {x: 0, y: 0};
         this.onMove = function(newPos) { };
     }
 
-    def moveTo(pos) {
-        this.x = pos.x;
-        this.y = pos.y;
-        this.onMove({x: x, y: y});
+    move() {
+        if (this.speed.x || this.speed.y) {
+            this.translate(this.speed);
+        }
     }
 
-    def.translate(delta) {
-        this.moveTo({x: this.x + delta.x, y: this.y + delta.y});
+    translate(delta) {
+        this.moveTo({x: this.pos.x + delta.x, y: this.pos.y + delta.y});
+    }
+
+    moveTo(pos) {
+        this.pos = pos
+        this.onMove(pos);
+    }
+
 }

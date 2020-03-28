@@ -20,9 +20,9 @@ class Weapon {
         this.fireTime = now;
 
         // Populate a copy of the weapon's projectile
-        var proj = this.projectile.clone();
-        proj.speed.x *= direction.x;
-        proj.speed.y *= direction.y;
+        let proj = this.projectile.clone();
+        proj.phys.speed.x *= direction.x;
+        proj.phys.speed.y *= direction.y;
 
         this.ready = false;
         return proj;
