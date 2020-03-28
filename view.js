@@ -30,7 +30,7 @@ class View {
 
     // Draws an object to viewport
     // The object must have both sprite and pos members
-    draw(drawable) {
+    drawSprite(drawable) {
         drawable.sprite.pos = this.worldToView(drawable.pos);
 
         if (drawable instanceof Monster) { // TODO: Can this be done somewhere else?

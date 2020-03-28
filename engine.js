@@ -391,7 +391,7 @@ function draw() {
         for (var i = 0; i < array.length; i++) {
             let item = array[i];
             if (item.update(time)) {
-                view.draw(item);
+                view.drawSprite(item);
             } else {
                 array.splice(i--, 1);
             }
@@ -399,7 +399,7 @@ function draw() {
     }
 
     // Draw player character
-    view.draw(player);
+    view.drawSprite(player);
 
     // Draw health bar outline
     g.fillStyle = '#000000'; // Black
