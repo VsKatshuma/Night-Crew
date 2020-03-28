@@ -62,3 +62,20 @@ class Destroyable {
         }
     }
 }
+
+class Movable {
+    constructor(initialPos) {
+        this.x = initialPos.x;
+        this.y = initialPos.y;
+        this.onMove = function(newPos) { };
+    }
+
+    def moveTo(pos) {
+        this.x = pos.x;
+        this.y = pos.y;
+        this.onMove({x: x, y: y});
+    }
+
+    def.translate(delta) {
+        this.moveTo({x: this.x + delta.x, y: this.y + delta.y});
+}
