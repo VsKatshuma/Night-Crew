@@ -25,8 +25,8 @@ var mouse = {
     sprite: new Sprite("crosshair.png")
 };
 
-function anglee(x1, y1, x2, y2) {
-    return (Math.PI/2) - Math.atan2(y2-y1, x2-x1);
+function weaponAngle(x1, y1, x2, y2) {
+    return (Math.PI / 2) - Math.atan2(y2 - y1, x2 - x1);
 }
 
 var projectiles = [
@@ -83,8 +83,7 @@ document.onkeyup = function(event) {
         right = false;
 };
 
-// Handle mouse presses and movement
-
+// Handle mouse events
 document.onmousedown = function(event) {
     event = event || window.event;
     mouse.pressed = true;
@@ -105,7 +104,6 @@ document.onmousemove = function(event) {
 
 var weaponProjectile = new Projectile("crosshair.png", 0, 0, 10, 10, 1500);
 var weapon = new Weapon(weaponProjectile, 1, 0, 250);
-
 
 // Initialize player location and movement attributes
 var playerX = -0.5;
@@ -173,9 +171,8 @@ function simplexNoise(xin, yin) {
     } else {
         i1 = 0; j1 = 1; // upper triangle, YX order: (0,0)->(0,1)->(1,1)
     }
-    // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
-    // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
-    // c = (3-sqrt(3))/6
+    // A step of (1,0) in (i,j) means a step of (1-c, -c) in (x,y), where c = (3-sqrt(3))/6
+    // A step of (0,1) in (i,j) means a step of (-c, 1-c) in (x,y), where c = (3-sqrt(3))/6
     var x1 = x0 - i1 + g2; // Offsets for middle corner in (x,y) unskewed coords
     var y1 = y0 - j1 + g2;
     var x2 = x0 - 1.0 + 2.0 * g2; // Offsets for last corner in (x,y) unskewed coords
@@ -334,7 +331,7 @@ function draw() {
             speedX = -Math.random();
             speedY = -1 + (Math.random() * 2);
         }
-        enemies.push({x: x, y: y, speedX: speedX * 5, speedY: speedY * 5});
+        enemies.push({x: x, y: y, speedX: (speedX + 0.1) * 5, speedY: (speedY + 0.1) * 5});
     }
 
     // Create floating particles around the player
@@ -376,10 +373,13 @@ function draw() {
         enemy.y += enemy.speedY;
 
         g.fillStyle = '#FFFF00';
+        g.shadowColor = '#FF8800';
+        g.shadowBlur = 25;
         g.beginPath();
         let enemyLocation = locationToCanvas(enemy.x, enemy.y);
         g.arc(enemyLocation[0], enemyLocation[1], 20, 0, 2 * Math.PI, 0);
         g.fill();
+        g.shadowColor = 'rgba(0, 0, 0, 0)';
 
         if (enemy.x < playerX - width || enemy.x > playerX + width || enemy.y < playerY - height || enemy.y > playerY + height) {
             enemies.splice(enemyIndex, 1);
@@ -485,8 +485,8 @@ function draw() {
     // Spawn weapon projectiles on mouse press
     weapon.load(time);
     if (mouse.pressed && weapon.ready) {
-        theta = anglee(playerLocation[0], playerLocation[1], mouse.x, mouse.y);
-        let direction = { x: Math.sin(theta), y: Math.cos(theta) }; 
+        theta = weaponAngle(playerLocation[0], playerLocation[1], mouse.x, mouse.y);
+        let direction = { x: Math.sin(theta), y: Math.cos(theta) };
         let proj = weapon.shoot(time, direction);
         proj.setPosition(playerLocation[0], playerLocation[1]);
         projectiles.push(proj);
