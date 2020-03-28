@@ -24,13 +24,6 @@ class Collidable {
         this.rect.y = y;
     }
 
-    drawTo(context) {
-        context.beginPath();
-        context.lineWidth = "3";
-        context.strokeStyle = "red";
-        context.rect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
-        context.stroke();
-    }
 }
 
 class Damageable {

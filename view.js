@@ -45,6 +45,16 @@ class View {
         this.gContext.shadowColor = 'rgba(0, 0, 0, 0)';
     }
 
+    // Draws a rectangle to the viewport
+    // The object must be a Rectangle instance
+    drawRectangle(rect, color) {
+        gContext.beginPath();
+        gContext.lineWidth = "2";
+        gContext.strokeStyle = color ? color : "red";
+        gContext.rect(rect.x, rext.y, rext.width, rext.height);
+        gContext.stroke();
+    }
+
     worldToView(worldPos) {
         return { x: worldPos.x - this.x, y: worldPos.y - this.y };
     }
