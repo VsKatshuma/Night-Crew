@@ -32,7 +32,14 @@ class View {
     // The object must have both sprite and pos members
     draw(drawable) {
         drawable.sprite.pos = this.worldToView(drawable.pos);
+
+        if (drawable instanceof Monster) {
+            g.shadowColor = '#FF8800';
+            g.shadowBlur = 25;
+        } // TODO maybe have the above somewhere else
+
         drawable.sprite.drawTo(this.gContext);
+        g.shadowColor = 'rgba(0, 0, 0, 0)';
     }
 
     worldToView(worldPos) {

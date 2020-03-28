@@ -4,6 +4,7 @@ class Projectile {
         this.sprite = new Sprite(filename);
         this.speed = {x: xspeed, y: yspeed};
         this.pos = {x: xpos, y: ypos};
+        this.body = new Collidable(this.sprite);
 
         // Protection against undying projectiles
         var t = lifetime;
@@ -28,17 +29,18 @@ class Projectile {
         this.pos.y = y;
         this.sprite.pos.x = this.pos.x;
         this.sprite.pos.y = this.pos.y;
+        this.body.setPosition(x, y);
     }
 
     move(delta) {
         this.setPosition(this.pos.x + delta.x, this.pos.y + delta.y);
     }
 
-    update(canvas, now) {
+    update(now) {
         this.move(this.speed);
-        this.sprite.drawTo(canvas);
         this.heart.tick(now);
         return this.heart.alive
     }
 
 }
+

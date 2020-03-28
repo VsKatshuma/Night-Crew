@@ -1,13 +1,6 @@
 
-var canvas = document.getElementById("canvas");
-canvas.style.cursor = "none";
-var g = canvas.getContext("2d");
-
-var width = window.innerWidth;
-var height = window.innerHeight;
-
-canvas.width = width;
-canvas.height = height;
+var view = new View(document.getElementById("canvas"));
+var g = view.gContext; // compatible with earlier code
 
 var requestAnimationFrame = window.requestAnimationFrame ||
                           window.mozRequestAnimationFrame ||
@@ -18,20 +11,9 @@ var requestAnimationFrame = window.requestAnimationFrame ||
 var w, a, s, d = false;
 var up, left, down, right = false;
 
-var mouse = {
-    x: 0,
-    y: 0,
-    pressed: false,
-    sprite: new Sprite("crosshair.png")
-};
-
 function weaponAngle(x1, y1, x2, y2) {
     return (Math.PI / 2) - Math.atan2(y2 - y1, x2 - x1);
 }
-
-var projectiles = [
-    new Projectile("crosshair.png", 0, 0, 2, 5, 2000)
-];
 
 // Handle keyboard events
 document.onkeydown = function (event) {
@@ -86,155 +68,59 @@ document.onkeyup = function(event) {
 // Handle mouse events
 document.onmousedown = function(event) {
     event = event || window.event;
-    mouse.pressed = true;
+    view.mouse.pressed = true;
 }
 
 document.onmouseup = function(event) {
     event = event || window.event;
-    mouse.pressed = false;
+    view.mouse.pressed = false;
 }
 
 document.onmousemove = function(event) {
     event = event || window.event;
-    mouse.x = event.clientX;
-    mouse.y = event.clientY;
-    mouse.sprite.pos.x = mouse.x
-    mouse.sprite.pos.y = mouse.y
+    view.mouse.x = event.clientX;
+    view.mouse.y = event.clientY;
 };
 
-var weaponProjectile = new Projectile("crosshair.png", 0, 0, 10, 10, 1500);
-var weapon = new Weapon(weaponProjectile, 1, 0, 250);
+var player = new Monster("wisp1.png");
+player.pos = { x: -0.5, y: -0.5 };
+
+var gameObjects = {
+    enemies: [],
+    projectiles: []
+};
 
 // Initialize player location and movement attributes
-var playerX = -0.5;
-var playerY = -0.5;
 var direction = Math.PI * 1.8;
 var speed = 0;
 
-// Calculate where to draw an object based on game location
-function locationToCanvas(x, y) {
-    var canvasX = (width / 2) - playerX + x;
-    var canvasY = (height / 2) - playerY + y;
-
-    return [canvasX, canvasY];
-}
-
-// ***
-// 2D simplex noise implementation from http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
-// ***
-var gradient = [[1,1,0], [-1,1,0], [1,-1,0], [-1,-1,0], [1,0,1], [-1,0,1],
-    [1,0,-1], [-1,0,-1], [0,1,1], [0,-1,1], [0,1,-1], [0,-1,-1]];
-var p = [151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36, 103,
-    30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62, 94,
-    252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136, 171,
-    168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,
-    211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25, 63, 161, 1,
-    216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188, 159, 86,
-    164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202, 38, 147, 118,
-    126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183, 170,
-    213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22, 39,
-    253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251, 34,
-    242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107, 49,
-    192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4, 150, 254,
-    138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
-var perm = new Array(512); // To remove the need for index wrapping, double the permutation table length
-for (var i = 0; i < 512; i++) {
-    perm[i] = p[i & 255];
-}
-
-function dotProduct(vector1, vector2) {
-    var result = 0;
-    for (var i = 0; i < 3; i++) {
-        result += vector1[i] * vector2[i];
-    }
-    return result;
-}
-
-function simplexNoise(xin, yin) {
-    var n0, n1, n2; // Noise contributions from the three corners
-    // Skew the input space to determine which simplex cell we're in
-    var f2 = 0.5 * (Math.sqrt(3.0) - 1.0);
-    var s = (xin + yin) * f2; // Hairy factor for 2D
-    var i = Math.floor(xin + s);
-    var j = Math.floor(yin + s);
-    var g2 = (3.0 - Math.sqrt(3.0)) / 6.0;
-    var t = (i + j) * g2;
-    var xOrigin = i - t; // Unskew the cell origin back to (x,y) space
-    var yOrigin = j - t;
-    var x0 = xin - xOrigin; // The x,y distances from the cell origin
-    var y0 = yin - yOrigin;
-    // For the 2D case, the simplex shape is an equilateral triangle.
-    // Determine which simplex we are in.
-    var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
-    if (x0 > y0) {
-        i1 = 1; j1 = 0; // lower triangle, XY order: (0,0)->(1,0)->(1,1)
-    } else {
-        i1 = 0; j1 = 1; // upper triangle, YX order: (0,0)->(0,1)->(1,1)
-    }
-    // A step of (1,0) in (i,j) means a step of (1-c, -c) in (x,y), where c = (3-sqrt(3))/6
-    // A step of (0,1) in (i,j) means a step of (-c, 1-c) in (x,y), where c = (3-sqrt(3))/6
-    var x1 = x0 - i1 + g2; // Offsets for middle corner in (x,y) unskewed coords
-    var y1 = y0 - j1 + g2;
-    var x2 = x0 - 1.0 + 2.0 * g2; // Offsets for last corner in (x,y) unskewed coords
-    var y2 = y0 - 1.0 + 2.0 * g2;
-    // Work out the hashed gradient indices of the three simplex corners
-    var ii = i & 255;
-    var jj = j & 255;
-    var gi0 = perm[ii + perm[jj]] % 12;
-    var gi1 = perm[ii + i1 + perm[jj + j1]] % 12;
-    var gi2 = perm[ii + 1 + perm[jj + 1]] % 12;
-    // Calculate the contribution from the three corners
-    var t0 = 0.5 - (x0 * x0) - (y0 * y0);
-    if (t0 < 0) {
-        n0 = 0.0;
-    } else {
-        t0 *= t0;
-        n0 = t0 * t0 * dotProduct(gradient[gi0], [x0, y0, 0]); // Only (x,y) of gradient is used for 2D
-    }
-    var t1 = 0.5 - (x1 * x1) - (y1 * y1);
-    if (t1 < 0) {
-        n1 = 0.0;
-    } else {
-        t1 *= t1;
-        n1 = t1 * t1 * dotProduct(gradient[gi1], [x1, y1, 0]);
-    }
-    var t2 = 0.5 - (x2 * x2) - (y2 * y2);
-    if (t2 < 0) {
-        n2 = 0.0;
-    } else {
-        t2 *= t2;
-        n2 = t2 * t2 * dotProduct(gradient[gi2], [x2, y2, 0]);
-    }
-    // Add contributions from each corner to get the final noise value.
-    // The result is scaled to return values in the interval [-1,1].
-    return 70.0 * (n0 + n1 + n2);
-}
-
 // Create an array for storing active particle effects
 var particles = [];
-// Create an array for storing active enemies
-var enemies = [];
+
 // Create an array for storing health bar effects
 var healthBarEffects = [];
+
 // Create a grid for storing nearby active background elements
 var doodadInterval = 50;
-var screenSize = Math.max(width, height);
+var screenSize = Math.max(view.width, view.height);
 var doodadGridSize = Math.ceil(screenSize * 1.2 / doodadInterval);
 var doodadGrid = new Array(doodadGridSize);
 for (var i = 0; i < doodadGridSize; i++) {
     doodadGrid[i] = new Array(doodadGridSize);
 }
+
 for (var y = 0; y < doodadGridSize; y++) {
     for (var x = 0; x < doodadGridSize; x++) {
-        doodadGrid[y][x] = simplexNoise(((Math.floor(playerX / doodadInterval) + x) * doodadInterval),
-                                        ((Math.floor(playerY / doodadInterval) + y) * doodadInterval));
+        doodadGrid[y][x] = simplexNoise(((Math.floor(player.pos.x / doodadInterval) + x) * doodadInterval),
+                                        ((Math.floor(player.pos.y / doodadInterval) + y) * doodadInterval));
     }
 }
+
 // Define a border around player character for unloading and loading background elements
-var loadZoneLeft = Math.floor(playerX / doodadInterval) * doodadInterval;
-var loadZoneRight = (Math.floor(playerX / doodadInterval) + 1) * doodadInterval;
-var loadZoneUp = Math.floor(playerY / doodadInterval) * doodadInterval;
-var loadZoneDown = (Math.floor(playerY / doodadInterval) + 1) * doodadInterval;
+var loadZoneLeft = Math.floor(player.pos.x / doodadInterval) * doodadInterval;
+var loadZoneRight = (Math.floor(player.pos.x / doodadInterval) + 1) * doodadInterval;
+var loadZoneUp = Math.floor(player.pos.y / doodadInterval) * doodadInterval;
+var loadZoneDown = (Math.floor(player.pos.y / doodadInterval) + 1) * doodadInterval;
 
 // Fps counter variables
 var fps = 0;
@@ -259,26 +145,30 @@ function draw() {
 
     // Update player position based on current direction and speed
     let angle = direction % (2 * Math.PI);
-    playerX += Math.cos(angle) * speed;
-    playerY += Math.sin(angle) * speed;
+    player.pos.x += Math.cos(angle) * speed;
+    player.pos.y += Math.sin(angle) * speed;
+
+    // Follow player's position with the view
+    view.x = player.pos.x - view.width / 2;
+    view.y = player.pos.y - view.height / 2;
 
     // Unload and load background elements if necessary
-    if (playerY < loadZoneUp) {
+    if (player.pos.y < loadZoneUp) {
         let loadArray = new Array(doodadGridSize);
         for (var x = 0; x < doodadGridSize; x++) {
-            loadArray[x] = simplexNoise(((Math.floor(playerX / doodadInterval) + x) * doodadInterval),
-                                        (Math.floor(playerY / doodadInterval) * doodadInterval));
+            loadArray[x] = simplexNoise(((Math.floor(player.pos.x / doodadInterval) + x) * doodadInterval),
+                                        (Math.floor(player.pos.y / doodadInterval) * doodadInterval));
         }
         doodadGrid.pop();
         doodadGrid.unshift(loadArray);
         loadZoneUp -= doodadInterval;
         loadZoneDown -= doodadInterval;
         //console.log("Shifted load zone up. New loadZoneUp: ", loadZoneUp);
-    } else if (playerY > loadZoneDown) {
+    } else if (player.pos.y > loadZoneDown) {
         let loadArray = new Array(doodadGridSize);
         for (var x = 0; x < doodadGridSize; x++) {
-            loadArray[x] = simplexNoise(((Math.floor(playerX / doodadInterval) + x) * doodadInterval),
-                                        ((Math.floor(playerY / doodadInterval) + (doodadGridSize - 1)) * doodadInterval));
+            loadArray[x] = simplexNoise(((Math.floor(player.pos.x / doodadInterval) + x) * doodadInterval),
+                                        ((Math.floor(player.pos.y / doodadInterval) + (doodadGridSize - 1)) * doodadInterval));
         }
         doodadGrid.shift();
         doodadGrid.push(loadArray);
@@ -286,20 +176,20 @@ function draw() {
         loadZoneDown += doodadInterval;
         //console.log("Shifted load zone down. New loadZoneDown: ", loadZoneDown);
     }
-    if (playerX < loadZoneLeft) {
+    if (player.pos.x < loadZoneLeft) {
         for (var y = 0; y < doodadGridSize; y++) {
             doodadGrid[y].pop();
-            doodadGrid[y].unshift(simplexNoise( (Math.floor(playerX / doodadInterval) * doodadInterval),
-                                                ((Math.floor(playerY / doodadInterval) + y) * doodadInterval)));
+            doodadGrid[y].unshift(simplexNoise( (Math.floor(player.pos.x / doodadInterval) * doodadInterval),
+                                                ((Math.floor(player.pos.y / doodadInterval) + y) * doodadInterval)));
         }
         loadZoneLeft -= doodadInterval;
         loadZoneRight -= doodadInterval;
         //console.log("Shifted load zone left. New loadZoneLeft: ", loadZoneLeft);
-    } else if (playerX > loadZoneRight) {
+    } else if (player.pos.x > loadZoneRight) {
         for (var y = 0; y < doodadGridSize; y++) {
             doodadGrid[y].shift();
-            doodadGrid[y].push(simplexNoise(((Math.floor(playerX / doodadInterval) + (doodadGridSize - 1)) * doodadInterval),
-                                            ((Math.floor(playerY / doodadInterval) + y) * doodadInterval)));
+            doodadGrid[y].push(simplexNoise(((Math.floor(player.pos.x / doodadInterval) + (doodadGridSize - 1)) * doodadInterval),
+                                            ((Math.floor(player.pos.y / doodadInterval) + y) * doodadInterval)));
         }
         loadZoneLeft += doodadInterval;
         loadZoneRight += doodadInterval;
@@ -311,43 +201,44 @@ function draw() {
         let seed = Math.random();
         let x, y, speedX, speedY = 0;
         if (seed < 0.25) {
-            x = playerX - (width * 0.6) + (Math.random() * width * 1.2);
-            y = playerY - (height * 0.6);
+            x = player.pos.x - (view.width * 0.6) + (Math.random() * view.width * 1.2);
+            y = player.pos.y - (view.height * 0.6);
             speedX = -1 + (Math.random() * 2);
             speedY = Math.random();
         } else if (seed < 0.5) {
-            x = playerX - (width * 0.6);
-            y = playerY - (height * 0.6) + (Math.random() * height * 1.2);
+            x = player.pos.x - (view.width * 0.6);
+            y = player.pos.y - (view.height * 0.6) + (Math.random() * view.height * 1.2);
             speedX = Math.random();
             speedY = -1 + (Math.random() * 2);
         } else if (seed < 0.75) {
-            x = playerX - (width * 0.6) + (Math.random() * width * 1.2);
-            y = playerY + (height * 0.6);
+            x = player.pos.x - (view.width * 0.6) + (Math.random() * view.width * 1.2);
+            y = player.pos.y + (view.height * 0.6);
             speedX = -1 + (Math.random() * 2);
             speedY = -Math.random();
         } else {
-            x = playerX + (width * 0.6);
-            y = playerY - (height * 0.6) + (Math.random() * height * 1.2);
+            x = player.pos.x + (view.width * 0.6);
+            y = player.pos.y - (view.height * 0.6) + (Math.random() * view.height * 1.2);
             speedX = -Math.random();
             speedY = -1 + (Math.random() * 2);
         }
-        enemies.push({x: x, y: y, speedX: (speedX + 0.1) * 5, speedY: (speedY + 0.1) * 5});
+        var mon = new Monster("wisp2.png", 10);
+        mon.speed = { x: (speedX + 0.1) * 5, y: (speedY + 0.1) * 5 };
+        mon.pos = { x: x, y: y };
+        gameObjects.enemies.push(mon);
     }
 
     // Create floating particles around the player
     if (Math.random() < 0.13) {
         let theta = (2 * Math.PI) * Math.random();
-        particles.push({x: playerX, y: playerY, speedX: Math.cos(theta), speedY: Math.sin(theta), framesAlive: 120});
+        particles.push({x: player.pos.x, y: player.pos.y, speedX: Math.cos(theta), speedY: Math.sin(theta), framesAlive: 120});
     }
 
     // Create health bar animation effects
     if (Math.random() < 0.07) {
-        healthBarEffects.push({x: width / 2 - 365, y: 40, radius: 8 + (Math.random() * 10), speedX: 1.5 + (Math.random() * 1.25), speedY: -0.15 + (Math.random() * 0.3)});
+        healthBarEffects.push({x: view.width / 2 - 365, y: 40, radius: 8 + (Math.random() * 10), speedX: 1.5 + (Math.random() * 1.25), speedY: -0.15 + (Math.random() * 0.3)});
     }
 
-    // Draw black background
-    g.fillStyle = '#000000';
-    g.fillRect(0, 0, canvas.width, canvas.height);
+    view.drawBackground();
 
     // Draw background elements
     g.fillStyle = '#0F0F9F';
@@ -355,36 +246,23 @@ function draw() {
         for (var x = 0; x < doodadGridSize; x++) {
             if (doodadGrid[y][x] > 0.5) {
                 // Shift background elements towards the top-left corner, since their "real" top-left corner is at the middle of the screen
-                let doodadLocation = locationToCanvas(
-                    ((Math.floor(playerX / doodadInterval) + x) * doodadInterval) - (screenSize * 0.6),
-                    ((Math.floor(playerY / doodadInterval) + y) * doodadInterval) - (screenSize * 0.6)
-                );
-                g.fillRect(doodadLocation[0], doodadLocation[1], 25, 25);
+                let doodadLocation = view.worldToView({
+                    x: ((Math.floor(player.pos.x / doodadInterval) + x) * doodadInterval) - (screenSize * 0.6),
+                    y: ((Math.floor(player.pos.y / doodadInterval) + y) * doodadInterval) - (screenSize * 0.6)
+                });
+                g.fillRect(doodadLocation.x, doodadLocation.y, 25, 25);
             }
         }
     }
 
-    // Draw enemies
-    var enemyIndex = 0;
-    while (enemyIndex < enemies.length) {
-        let enemy = enemies[enemyIndex];
-
-        enemy.x += enemy.speedX;
-        enemy.y += enemy.speedY;
-
-        g.fillStyle = '#FFFF00';
-        g.shadowColor = '#FF8800';
-        g.shadowBlur = 25;
-        g.beginPath();
-        let enemyLocation = locationToCanvas(enemy.x, enemy.y);
-        g.arc(enemyLocation[0], enemyLocation[1], 20, 0, 2 * Math.PI, 0);
-        g.fill();
-        g.shadowColor = 'rgba(0, 0, 0, 0)';
-
-        if (enemy.x < playerX - width || enemy.x > playerX + width || enemy.y < playerY - height || enemy.y > playerY + height) {
-            enemies.splice(enemyIndex, 1);
-        } else {
-            enemyIndex++;
+    // Destroy enemies if they wander too far
+    for (let i = 0; i < gameObjects.enemies.length; i++) {
+        let enemy = gameObjects.enemies[i];
+        if (enemy.pos.x < player.pos.x - view.width ||
+            enemy.pos.x > player.pos.x + view.width ||
+            enemy.pos.y < player.pos.y - view.height ||
+            enemy.pos.y > player.pos.y + view.height) {
+                gameObjects.enemies.splice(i--, 1);
         }
     }
 
@@ -401,8 +279,8 @@ function draw() {
 
         g.fillStyle = '#00CC55';
         g.beginPath();
-        let particleLocation = locationToCanvas(particle.x, particle.y);
-        g.arc(particleLocation[0], particleLocation[1], 4, 0, 2 * Math.PI, 0);
+        let particleLocation = view.worldToView(particle);
+        g.arc(particleLocation.x, particleLocation.y, 4, 0, 2 * Math.PI, 0);
         g.fill();
 
         if (particle.framesAlive <= 0) {
@@ -413,36 +291,32 @@ function draw() {
     }
 
     // Draw player character
-    g.fillStyle = '#C0C0C0';
-    g.beginPath();
-    var playerLocation = locationToCanvas(playerX, playerY);
-    g.arc(playerLocation[0], playerLocation[1], 20, 0, 2 * Math.PI, 0);
-    g.fill();
+    view.draw(player);
 
     // Draw health bar outline
     g.fillStyle = '#000000'; // Black
-    g.fillRect(width / 2 - 354, 16, 708, 3); // Top
-    g.fillRect(width / 2 - 354, 19, 3, 42); // Left
-    g.fillRect(width / 2 - 354, 61, 708, 3); // Bottom
-    g.fillRect(width / 2 + 351, 19, 3, 42); // Right
+    g.fillRect(view.width / 2 - 354, 16, 708, 3); // Top
+    g.fillRect(view.width / 2 - 354, 19, 3, 42); // Left
+    g.fillRect(view.width / 2 - 354, 61, 708, 3); // Bottom
+    g.fillRect(view.width / 2 + 351, 19, 3, 42); // Right
     g.fillStyle = '#FFFFFF'; // White
-    g.fillRect(width / 2 - 350, 19, 700, 1); // Top
-    g.fillRect(width / 2 - 351, 19, 1, 42); // Left
-    g.fillRect(width / 2 - 350, 60, 700, 1); // Bottom
-    g.fillRect(width / 2 + 350, 19, 1, 42); // Right
+    g.fillRect(view.width / 2 - 350, 19, 700, 1); // Top
+    g.fillRect(view.width / 2 - 351, 19, 1, 42); // Left
+    g.fillRect(view.width / 2 - 350, 60, 700, 1); // Bottom
+    g.fillRect(view.width / 2 + 350, 19, 1, 42); // Right
 
     // Draw health bar
     g.fillStyle = 'rgba(0, 200, 255, 0.75)';
-    g.fillRect(width / 2 - 350, 20, 700, 40);
+    g.fillRect(view.width / 2 - 350, 20, 700, 40);
 
     // Calculate clipping path for health bar
     g.save();
     g.beginPath();
-    g.moveTo(width / 2 - 350, 20);
-    g.lineTo(width / 2 + 349, 20);
-    g.lineTo(width / 2 + 349, 60);
-    g.lineTo(width / 2 - 350, 60);
-    g.lineTo(width / 2 - 350, 20);
+    g.moveTo(view.width / 2 - 350, 20);
+    g.lineTo(view.width / 2 + 349, 20);
+    g.lineTo(view.width / 2 + 349, 60);
+    g.lineTo(view.width / 2 - 350, 60);
+    g.lineTo(view.width / 2 - 350, 20);
     g.closePath();
     g.clip();
 
@@ -459,7 +333,7 @@ function draw() {
         g.arc(effect.x, effect.y, effect.radius, 0, 2 * Math.PI, 0);
         g.fill();
 
-        if (effect.x > width / 2 + 365) {
+        if (effect.x > view.width / 2 + 365) {
             healthBarEffects.splice(healthBarEffectIndex, 1);
         } else {
             healthBarEffectIndex++;
@@ -480,23 +354,31 @@ function draw() {
     g.fillText(fps + " fps", 6, 16);
 
     // Draw mouse
-    mouse.sprite.drawTo(g);
+    view.drawMouse();
 
     // Spawn weapon projectiles on mouse press
-    weapon.load(time);
-    if (mouse.pressed && weapon.ready) {
-        theta = weaponAngle(playerLocation[0], playerLocation[1], mouse.x, mouse.y);
+    player.weapon.load(time);
+    if (view.mouse.pressed && player.weapon.ready) {
+        let mouse = view.viewToWorld(view.mouse);
+        let theta = weaponAngle(player.pos.x, player.pos.y, mouse.x, mouse.y);
         let direction = { x: Math.sin(theta), y: Math.cos(theta) };
-        let proj = weapon.shoot(time, direction);
-        proj.setPosition(playerLocation[0], playerLocation[1]);
-        projectiles.push(proj);
+        let proj = player.weapon.shoot(time, direction);
+        proj.setPosition(player.pos.x, player.pos.y);
+        gameObjects.projectiles.push(proj);
     }
 
-    // Draw projectiles
-    for (var i = 0; i < projectiles.length; i++) {
-        var proj = projectiles[i];
-        if (!proj.update(g, time)) {
-            projectiles.splice(i--, 1);
+    // Update and draw rest of the game objects
+    for (let key in gameObjects) {
+
+        let array = gameObjects[key];
+        for (let i = 0; i < array.length; i++) {
+            let item = array[i];
+            if (item.update(time)) {
+                view.draw(item);
+            }
+            else {
+                array.splice(i--, 1);
+            }
         }
     }
 
