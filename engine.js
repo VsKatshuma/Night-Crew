@@ -9,7 +9,7 @@ var requestAnimationFrame = window.requestAnimationFrame ||
                           window.webkitRequestAnimationFrame;
 
 var w, a, s, d = false;
-var up, left, down, right = false;
+var upArrow, leftArrow, downArrow, rightArrow = false;
 
 // Handle keyboard events
 document.onkeydown = function (event) {
@@ -27,17 +27,17 @@ document.onkeydown = function (event) {
     if (event.code === 'KeyD' && !d) {
         d = true;
     }
-    if (event.code === 'ArrowUp' && !up) {
-        up = true;
+    if (event.code === 'ArrowUp' && !upArrow) {
+        upArrow = true;
     }
-    if (event.code === 'ArrowLeft' && !left) {
-        left = true;
+    if (event.code === 'ArrowLeft' && !leftArrow) {
+        leftArrow = true;
     }
-    if (event.code === 'ArrowDown' && !down) {
-        down = true;
+    if (event.code === 'ArrowDown' && !downArrow) {
+        downArrow = true;
     }
-    if (event.code === 'ArrowRight' && !right) {
-        right = true;
+    if (event.code === 'ArrowRight' && !rightArrow) {
+        rightArrow = true;
     }
 };
 
@@ -52,13 +52,13 @@ document.onkeyup = function(event) {
     if (event.code === 'KeyD')
         d = false;
     if (event.code === 'ArrowUp')
-        up = false;
+        upArrow = false;
     if (event.code === 'ArrowLeft')
-        left = false;
+        leftArrow = false;
     if (event.code === 'ArrowDown')
-        down = false;
+        downArrow = false;
     if (event.code === 'ArrowRight')
-        right = false;
+        rightArrow = false;
 };
 
 // Handle mouse events
@@ -80,15 +80,7 @@ document.onmousemove = function(event) {
 
 // Initialize player
 var player = new Player("wisp1.png");
-player.pos = { x: -0.5, y: -0.5 };
-
-// Initialize player movement attributes
-var direction = Math.PI * 1.8;
-var speed = 0;
-
-function weaponAngle(x1, y1, x2, y2) {
-    return (Math.PI / 2) - Math.atan2(y2 - y1, x2 - x1);
-}
+player.pos = { x: 0, y: 0 };
 
 // Create arrays for storing game objects
 var gameObjects = {
@@ -101,6 +93,11 @@ var particles = [];
 
 // Create an array for storing health bar effects
 var healthBarEffects = [];
+
+// Health bar position variables
+var healthBarTop = 20;
+var healthBarBottom = 50;
+var healthBarMiddle = 35; // Spawning height of effects
 
 // Create a grid for storing nearby active background elements
 var doodadInterval = 50;
@@ -132,23 +129,100 @@ var timestamps = [];
 // Main gameplay loop, called with requestAnimationFrame
 // ***
 function draw() {
-    if (w || up) {
-        speed = Math.min(speed + 0.5, 10);
-    }
-    if (a || left) {
-        direction -= 0.1;
-    }
-    if (s || down) {
-        speed = Math.max(speed - 0.5, 0);
-    }
-    if (d || right) {
-        direction += 0.1;
+    var up = w || upArrow;
+    var left = a || leftArrow;
+    var down = s || downArrow;
+    var right = d || rightArrow;
+
+    // Friction variables
+    var movedUp = false;
+    var movedLeft = false;
+    var movedDown = false;
+    var movedRight = false;
+
+    // Movement handling
+    if (!(up && left && down && right)) {
+        if (up && right && down) {
+            up = false;
+            down = false;
+        }
+        if (right && down && left) {
+            right = false;
+            left = false;
+        }
+        if (down && left && up) {
+            down = false;
+            up = false;
+        }
+        if (left && up && right) {
+            left = false;
+            right = false;
+        }
+        if (up && right) {
+            player.speed.y = player.speed.y > -7.7 ? Math.max(player.speed.y - 0.385, -7.7) : Math.min(player.speed.y + 0.15, -7.7);
+            player.speed.x = player.speed.x < 7.7 ? Math.min(player.speed.x + 0.385, 7.7) : Math.max(player.speed.x - 0.15, 7.7);
+            movedUp = true;
+            movedRight = true;
+        } else if (right && down) {
+            player.speed.x = player.speed.x < 7.7 ? Math.min(player.speed.x + 0.385, 7.7) : Math.max(player.speed.x - 0.15, 7.7);
+            player.speed.y = player.speed.y < 7.7 ? Math.min(player.speed.y + 0.385, 7.7) : Math.max(player.speed.y - 0.15, 7.7);
+            movedRight = true;
+            movedDown = true;
+        } else if (down && left) {
+            player.speed.y = player.speed.y < 7.7 ? Math.min(player.speed.y + 0.385, 7.7) : Math.max(player.speed.y - 0.15, 7.7);
+            player.speed.x = player.speed.x > -7.7 ? Math.max(player.speed.x - 0.385, -7.7) : Math.min(player.speed.x + 0.15, -7.7);
+            movedDown = true;
+            movedLeft = true;
+        } else if (left && up) {
+            player.speed.x = player.speed.x > -7.7 ? Math.max(player.speed.x - 0.385, -7.7) : Math.min(player.speed.x + 0.15, -7.7);
+            player.speed.y = player.speed.y > -7.7 ? Math.max(player.speed.y - 0.385, -7.7) : Math.min(player.speed.y + 0.15, -7.7);
+            movedLeft = true;
+            movedUp = true;
+        } else {
+            if (up) {
+                player.speed.y = Math.max(player.speed.y - 0.5, -10);
+                movedUp = true;
+            }
+            if (left) {
+                player.speed.x = Math.max(player.speed.x - 0.5, -10);
+                movedLeft = true;
+            }
+            if (down) {
+                player.speed.y = Math.min(player.speed.y + 0.5, 10);
+                movedDown = true;
+            }
+            if (right) {
+                player.speed.x = Math.min(player.speed.x + 0.5, 10);
+                movedRight = true;
+            }
+        }
     }
 
-    // Update player position based on current direction and speed
-    let angle = direction % (2 * Math.PI);
-    player.pos.x += Math.cos(angle) * speed;
-    player.pos.y += Math.sin(angle) * speed;
+    // Apply friction
+    if (!movedUp) {
+        if (player.speed.y < 0) {
+            player.speed.y = Math.min(player.speed.y + 0.15, 0);
+        }
+    }
+    if (!movedLeft) {
+        if (player.speed.x < 0) {
+            player.speed.x = Math.min(player.speed.x + 0.15, 0);
+        }
+    }
+    if (!movedDown) {
+        if (player.speed.y > 0) {
+            player.speed.y = Math.max(player.speed.y - 0.15, 0);
+        }
+    }
+    if (!movedRight) {
+        if (player.speed.x > 0) {
+            player.speed.x = Math.max(player.speed.x - 0.15, 0);
+        }
+    }
+
+    // Update player's position based on speed
+    player.pos.x += player.speed.x;
+    player.pos.y += player.speed.y;
 
     // Follow player's position with the view
     view.x = player.pos.x - view.width / 2;
@@ -236,10 +310,11 @@ function draw() {
     }
 
     // Create health bar animation effects
-    if (Math.random() < 0.07) {
-        healthBarEffects.push({x: view.width / 2 - 365, y: 40, radius: 8 + (Math.random() * 10), speedX: 1.5 + (Math.random() * 1.25), speedY: -0.15 + (Math.random() * 0.3)});
+    if (Math.random() < 0.06) {
+        healthBarEffects.push({x: view.width / 2 - 365, y: healthBarMiddle, radius: 6 + (Math.random() * 9), speedX: 1.5 + (Math.random() * 1.25), speedY: -0.1 + (Math.random() * 0.2)});
     }
 
+    // Draw the background
     view.drawBackground();
 
     // Draw background elements
@@ -323,28 +398,28 @@ function draw() {
 
     // Draw health bar outline
     g.fillStyle = '#000000'; // Black
-    g.fillRect(view.width / 2 - 354, 16, 708, 3); // Top
-    g.fillRect(view.width / 2 - 354, 19, 3, 42); // Left
-    g.fillRect(view.width / 2 - 354, 61, 708, 3); // Bottom
-    g.fillRect(view.width / 2 + 351, 19, 3, 42); // Right
+    g.fillRect(view.width / 2 - 354, healthBarTop - 4, 708, 3); // Top
+    g.fillRect(view.width / 2 - 354, healthBarTop - 1, 3, 32); // Left
+    g.fillRect(view.width / 2 - 354, healthBarBottom + 1, 708, 3); // Bottom
+    g.fillRect(view.width / 2 + 351, healthBarTop - 1, 3, 32); // Right
     g.fillStyle = '#FFFFFF'; // White
-    g.fillRect(view.width / 2 - 350, 19, 700, 1); // Top
-    g.fillRect(view.width / 2 - 351, 19, 1, 42); // Left
-    g.fillRect(view.width / 2 - 350, 60, 700, 1); // Bottom
-    g.fillRect(view.width / 2 + 350, 19, 1, 42); // Right
+    g.fillRect(view.width / 2 - 350, healthBarTop - 1, 700, 1); // Top
+    g.fillRect(view.width / 2 - 351, healthBarTop - 1, 1, 32); // Left
+    g.fillRect(view.width / 2 - 350, healthBarBottom, 700, 1); // Bottom
+    g.fillRect(view.width / 2 + 350, healthBarTop - 1, 1, 32); // Right
 
     // Draw health bar
     g.fillStyle = 'rgba(0, 200, 255, 0.75)';
-    g.fillRect(view.width / 2 - 350, 20, 700, 40);
+    g.fillRect(view.width / 2 - 350, healthBarTop, 700, healthBarBottom - healthBarTop);
 
     // Calculate clipping path for health bar
     g.save();
     g.beginPath();
-    g.moveTo(view.width / 2 - 350, 20);
-    g.lineTo(view.width / 2 + 349, 20);
-    g.lineTo(view.width / 2 + 349, 60);
-    g.lineTo(view.width / 2 - 350, 60);
-    g.lineTo(view.width / 2 - 350, 20);
+    g.moveTo(view.width / 2 - 350, healthBarTop);
+    g.lineTo(view.width / 2 + 349, healthBarTop);
+    g.lineTo(view.width / 2 + 349, healthBarBottom);
+    g.lineTo(view.width / 2 - 350, healthBarBottom);
+    g.lineTo(view.width / 2 - 350, healthBarTop);
     g.closePath();
     g.clip();
 
