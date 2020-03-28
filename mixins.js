@@ -20,11 +20,26 @@ class Collidable {
     }
 
     set pos(pos) {
-        this.rect.x = pos.x;
-        this.rect.y = pos.y;
+        this.rect.x = pos.x - this.rect.width / 2;
+        this.rect.y = pos.y - this.rect.height / 2;
     }
-
 }
+
+function checkAllCollisions(firstArray, secondArray) {
+    for (var i = 0; i < firstArray.length; i++) {
+        for (var j = 0; j < secondArray.length; j++) {
+            checkCollision(firstArray[i], secondArray[j]);
+        }
+    }
+}
+
+function checkCollision(first, second) {
+    if (first.body.rect.intersect(second.body.rect)) {
+        first.body.rect.color = "green"; // DEBUG
+        second.body.rect.color = "green"; // DEBUG
+    }
+}
+
 
 class Damageable {
     constructor(health, rattle) {
