@@ -81,14 +81,25 @@ document.onmousemove = function(event) {
 // Initialize game state
 var gameState = 1; // 0 = title, 1 = game, 2 = failure state
 
-// Initialize player
-var player = new Monster("wisp1.png");
-
 // Create arrays for storing game objects
 var gameObjects = {
     enemies: [],
-    projectiles: []
+    projectiles: [],
+    enemyProjectiles: [],
+    player: [],
+    playerProjectiles: []
 };
+
+// Initialize player
+gameObjects.player.push(new Monster("wisp1.png"))
+var player = gameObjects.player[0];
+
+var collisionGroups = [
+    {array: 'enemies', ignore: ['enemyProjectiles']},
+    {array: 'enemyProjectiles', ignore: ['enemies']},
+    {array: 'player', ignore: ['playerProjectiles']},
+    {array: 'playerProjectiles', ignore: ['player']}
+];
 
 // Create an array for storing active particle effects
 var particles = [];
@@ -537,7 +548,18 @@ function draw() {
         let direction = { x: Math.sin(theta), y: Math.cos(theta) };
         let proj = player.weapon.shoot(time, direction);
         proj.phys.moveTo(player.phys.pos);
-        gameObjects.projectiles.push(proj);
+        gameObjects.playerProjectiles.push(proj);
+    }
+
+    // Check all collisions
+    for (var i = 0; i < collisionGroups.length; i++) {
+        let firstGroup = collisionGroups[i];
+        for (var j = i + 1; j < collisionGroups.length; j++) {
+            let secondGroup = collisionGroups[j];
+            if (!firstGroup.ignore.includes(secondGroup.array)) {
+                checkAllCollisions(gameObjects[firstGroup.array], gameObjects[secondGroup.array]);
+            }
+        }
     }
 
     // Update and draw game objects
