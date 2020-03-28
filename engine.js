@@ -129,6 +129,11 @@ var timestamps = [];
 // Main gameplay loop, called with requestAnimationFrame
 // ***
 function draw() {
+
+    // Current time
+    var time = Date.now();
+
+    // Player status
     var up = w || upArrow;
     var left = a || leftArrow;
     var down = s || downArrow;
@@ -448,7 +453,6 @@ function draw() {
     view.drawMouse();
 
     // Calculate frames per second
-    var time = Date.now();
     timestamps.push(time);
     while (timestamps[0] < time - 1000) {
         timestamps.shift();
