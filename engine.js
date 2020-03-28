@@ -95,9 +95,9 @@ gameObjects.player.push(new Monster("wisp1.png"))
 var player = gameObjects.player[0];
 
 var collisionGroups = [
-    {array: 'enemies', ignore: ['enemyProjectiles']},
+    {array: 'enemies', ignore: ['enemyProjectiles', 'player']},
     {array: 'enemyProjectiles', ignore: ['enemies']},
-    {array: 'player', ignore: ['playerProjectiles']},
+    {array: 'player', ignore: ['playerProjectiles', 'enemies']},
     {array: 'playerProjectiles', ignore: ['player']}
 ];
 
