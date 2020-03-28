@@ -33,11 +33,11 @@ class Monster {
         this.sprite = new Sprite(spritefile, () => { this.body.useSprite(this.sprite) });
 
         this.heart = new Destroyable();
-        var onDeath = function() { this.heart.alive = false; };
+        var onDeath = () => { this.heart.alive = false; };
         this.health = new Damageable(health, onDeath);
 
         var weaponProjectile = new Projectile("crosshair.png", {x: 0, y: 0}, {x: 10, y: 10}, 1500);
-        this.weapon = new Weapon(weaponProjectile, 1, 0, 250);
+        this.weapon = new Weapon(weaponProjectile, 1, 0, 250, 2);
 
         this.phys.onMove = (pos) => {
             this.body.pos = pos;

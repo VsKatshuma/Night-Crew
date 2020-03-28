@@ -1,3 +1,37 @@
+/*
+ * Collision helper functions
+ */
+
+function checkAllCollisions(firstArray, secondArray) {
+    for (var i = 0; i < firstArray.length; i++) {
+        for (var j = 0; j < secondArray.length; j++) {
+            checkCollision(firstArray[i], secondArray[j]);
+        }
+    }
+}
+
+function checkCollision(first, second) {
+    if (first.body.rect.intersect(second.body.rect)) {
+        collide(first, second);
+        first.body.rect.color = "green"; // DEBUG
+        second.body.rect.color = "green"; // DEBUG
+    }
+}
+
+function collide(first, second) {
+    var objs = { };
+    objs[first.constructor.name.toLowerCase()] = first;
+    objs[second.constructor.name.toLowerCase()] = second;
+
+    if (objs.monster && objs.projectile) {
+        console.log(objs.monster.health.takeDamage(objs.projectile.damage))
+        objs.projectile.heart.alive = false;
+    }
+}
+
+/*
+ * Mixin (property) classes
+ */
 
 class Collidable {
     constructor(base) {
@@ -25,21 +59,6 @@ class Collidable {
     }
 }
 
-function checkAllCollisions(firstArray, secondArray) {
-    for (var i = 0; i < firstArray.length; i++) {
-        for (var j = 0; j < secondArray.length; j++) {
-            checkCollision(firstArray[i], secondArray[j]);
-        }
-    }
-}
-
-function checkCollision(first, second) {
-    if (first.body.rect.intersect(second.body.rect)) {
-        first.body.rect.color = "green"; // DEBUG
-        second.body.rect.color = "green"; // DEBUG
-    }
-}
-
 
 class Damageable {
     constructor(health, rattle) {
@@ -50,7 +69,7 @@ class Damageable {
 
     takeDamage(amount) {
         this.health -= amount;
-        if (this.health < 0) {
+        if (this.health <= 0) {
             this.health = 0;
             if (!this.rattled) {
                 this.rattle();

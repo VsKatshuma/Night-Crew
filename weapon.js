@@ -4,11 +4,12 @@ function weaponAngle(x1, y1, x2, y2) {
 }
 
 class Weapon {
-    constructor(projectile, amount, spread, rate) {
+    constructor(projectile, amount, spread, rate, damage) {
         this.projectile = projectile;
         this.amount = amount;
         this.spread = spread;
         this.rate = rate;
+        this.damage = damage
 
         this.fireTime = 0;
         this.ready = true;
@@ -23,6 +24,7 @@ class Weapon {
         let proj = this.projectile.clone();
         proj.phys.speed.x *= direction.x;
         proj.phys.speed.y *= direction.y;
+        proj.damage = this.damage;
 
         this.ready = false;
         return proj;
