@@ -99,6 +99,23 @@ function stateTransition(toState) {
     }
 }
 
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function() {
+        this.sound.play();
+    }
+    this.stop = function() {
+        this.sound.pause();
+    }
+}
+var damage = new sound("Sounds/heavyplasma2.wav");
+var death = new sound("Sounds/heavyplasmahit2.wav");
+
 // Create arrays for storing game objects
 var gameObjects = {
     enemies: [],
@@ -617,7 +634,6 @@ function draw() {
                                   y: mon.behavior.moveSpeed * playerDirection.y};
             }
         }
-
     }
 
     // Check all collisions

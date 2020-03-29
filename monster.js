@@ -79,7 +79,10 @@ class Monster {
         this.sprite = new Sprite(spritefile, () => { this.body.useSprite(this.sprite) });
 
         this.heart = new Destroyable();
-        var onDeath = () => { this.heart.alive = false; };
+        var onDeath = () => {
+            death.play();
+            this.heart.alive = false;
+        };
         this.health = new Damageable(health, onDeath);
 
         this.weapon = weapons.peaShooter();
