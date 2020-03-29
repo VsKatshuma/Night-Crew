@@ -90,6 +90,7 @@ var gameObjects = {
 // Initialize player
 gameObjects.player.push(new Monster("wisp1.png"))
 var player = gameObjects.player[0];
+player.weapon = weapons.starter();
 
 var collisionGroups = [
     {array: 'enemies', ignore: ['enemyProjectiles', 'player']},
