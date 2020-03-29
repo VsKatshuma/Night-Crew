@@ -158,6 +158,11 @@ stateTransition(0);
 gameObjects.player.push(new Monster("Player_Idle1.png", 100, '#00FFFF'));
 var player = gameObjects.player[0];
 var playerAnimation = {timer: 0, phase: 1};
+player.health.onHit = () => {
+    player.sprite.changeImage("Player_Hit.png");
+    playerAnimation.phase = 3;
+    playerAnimation.timer = -5;
+};
 player.weapon = weapons.starter();
 
 var collisionGroups = [
@@ -691,13 +696,13 @@ function draw() {
 
     // Player animation
     playerAnimation.timer++;
-    if (view.mouse.pressed) {
+    if (view.mouse.pressed && playerAnimation.timer > 0) {
         player.sprite.changeImage("Shooting.png")
         playerAnimation.phase = 2;
         playerAnimation.timer = 0;
     } else {
         if (playerAnimation.timer >= 40) {
-            if (playerAnimation.phase == 2) {
+            if (playerAnimation.phase > 1) {
                 player.sprite.changeImage("Player_Idle1.png");
                 playerAnimation.phase = 1;
                 playerAnimation.timer = 0;
