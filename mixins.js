@@ -65,10 +65,12 @@ class Damageable {
         this.health = health;
         this.rattle = rattle;
         this.rattled = false;
+        this.onHit = (amount) => { }
     }
 
     takeDamage(amount) {
         this.health -= amount;
+        this.onHit(amount);
         if (this.health <= 0) {
             this.health = 0;
             if (!this.rattled) {
