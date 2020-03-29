@@ -310,6 +310,10 @@ var timestamps = [];
 // Main gameplay loop, called every frame
 // ***
 function draw() {
+
+    // Update view size in case window dimensions change
+    view.updateSize();
+
     // Current time
     var time = Date.now();
 
