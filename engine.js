@@ -79,7 +79,7 @@ document.onmousemove = function(event) {
 };
 
 // Initialize game state and play time
-var gameState = 0; // 0 = title, 1 = game, 2 = failure state
+var gameState = null; // 0 = title, 1 = game, 2 = failure state
 var startTime = NaN;
 var finishTime = NaN;
 
@@ -113,6 +113,9 @@ function sound(src) {
 }
 var damage = new sound("Sounds/heavyplasma2.wav");
 var death = new sound("Sounds/heavyplasmahit2.wav");
+
+// Enter intro state
+stateTransition(0);
 
 // Create arrays for storing game objects
 var gameObjects = {
