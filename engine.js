@@ -88,7 +88,7 @@ var gameObjects = {
 };
 
 // Initialize player
-gameObjects.player.push(new Monster("wisp1.png"))
+gameObjects.player.push(new Monster("Player_Idle1.png"))
 var player = gameObjects.player[0];
 player.weapon = weapons.starter();
 
@@ -309,7 +309,7 @@ function draw() {
             speedX = -Math.random();
             speedY = -1 + (Math.random() * 2);
         }
-        var mon = new Monster("wisp2.png", 10);
+        var mon = new Monster("Enemy2.png", 10);
         mon.phys.speed = { x: (speedX + 0.1) * 5, y: (speedY + 0.1) * 5 };
         mon.phys.pos = { x: x, y: y };
         gameObjects.enemies.push(mon);
