@@ -43,5 +43,5 @@ class Weapon {
 
 var weapons = {
     starter: () => { return new Weapon("PlayerBulletSmall.png", 15, 1500, 1, 0, 250, 2); },
-    peaShooter: () => { return new Weapon("EnemyBulletSmall.png", 7, 1000, 1, 0, 500, 1); }
+    peaShooter: () => { return new Weapon("EnemyBulletSmall.png", 7, 1000, 1, 0, 500, 4); }
 };

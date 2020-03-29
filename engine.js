@@ -79,28 +79,25 @@ document.onmousemove = function(event) {
 };
 
 // Initialize game state and play time
-var gameState = null; // 0 = title, 1 = game, 2 = failure state
+var gameState = 0; // 0 = title, 1 = game, 2 = failure state
 var startTime = NaN;
 var finishTime = NaN;
 
 function stateTransition(toState) {
     if (toState == 0) {
+        gameState = 0;
         startTime = NaN;
         finishTime = NaN;
-    }
-    else if (toState == 1) {
+    } else if (toState == 1) {
+        gameState = 1;
         startTime = Date.now();
-    }
-    else if (toState == 2) {
+    } else if (toState == 2) {
+        gameState = 2;
         finishTime = Date.now();
-    }
-    else {
+    } else {
         throw "Unknown gameState " + toState;
     }
 }
-
-// Enter game state DEBUG
-stateTransition(1);
 
 // Create arrays for storing game objects
 var gameObjects = {
@@ -569,7 +566,7 @@ function draw() {
         particle.speedY *= 0.99;
         particle.framesAlive -= 1;
 
-        g.fillStyle = '#00CC55';
+        g.fillStyle = '#0088DD';
         g.globalAlpha = particle.framesAlive / 120; // Particles emanating from the player have a lifespan of 2 seconds
         g.beginPath();
         let particleLocation = view.worldToView(particle);
@@ -669,14 +666,14 @@ function draw() {
 
         // Draw health bar
         g.fillStyle = 'rgba(0, 200, 255, 0.75)';
-        g.fillRect(view.width / 2 - 350, healthBarTop, 700, healthBarBottom - healthBarTop);
+        g.fillRect(view.width / 2 - 350, healthBarTop, (player.health.health / 100) * 700, healthBarBottom - healthBarTop);
 
         // Calculate clipping path for health bar
         g.save();
         g.beginPath();
         g.moveTo(view.width / 2 - 350, healthBarTop);
-        g.lineTo(view.width / 2 + 349, healthBarTop);
-        g.lineTo(view.width / 2 + 349, healthBarBottom);
+        g.lineTo(view.width / 2 + 349 - ((1.0 - (player.health.health / 100)) * 700), healthBarTop);
+        g.lineTo(view.width / 2 + 349 - ((1.0 - (player.health.health / 100)) * 700), healthBarBottom);
         g.lineTo(view.width / 2 - 350, healthBarBottom);
         g.lineTo(view.width / 2 - 350, healthBarTop);
         g.closePath();
@@ -721,8 +718,8 @@ function draw() {
     }
 
     // Start the game
-    if (gameState == 0 && Math.sqrt((player.phys.pos.x * player.phys.pos.x) + (player.phys.pos.y * player.phys.pos.y)) > 2000) {
-        gameState = 1;
+    if (gameState == 0 && Math.sqrt((player.phys.pos.x * player.phys.pos.x) + (player.phys.pos.y * player.phys.pos.y)) > 1900) {
+        stateTransition(1);
     }
 
     requestAnimationFrame(draw);
