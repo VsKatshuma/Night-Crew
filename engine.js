@@ -137,6 +137,11 @@ stateTransition(0);
 // Initialize player
 gameObjects.player.push(new Monster("Player_Idle1.png", 100));
 var player = gameObjects.player[0];
+var playerAnimation = {timer: 0, phase: 1};
+var playerAnimation1 = new Sprite('Player_Idle1.png', undefined);
+var playerAnimation2 = new Sprite('Player_Idle2.png', undefined);
+var playerAnimation3 = new Sprite('Shooting.png', undefined);
+var playerAnimation4 = new Sprite('Player_Hit.png', undefined);
 player.weapon = weapons.starter();
 
 var collisionGroups = [
@@ -660,6 +665,26 @@ function draw() {
             let secondGroup = collisionGroups[j];
             if (!firstGroup.ignore.includes(secondGroup.array)) {
                 checkAllCollisions(gameObjects[firstGroup.array], gameObjects[secondGroup.array]);
+            }
+        }
+    }
+
+    // Player animation
+    playerAnimation.timer++;
+    if (view.mouse.pressed) {
+        player.sprite = playerAnimation3;
+        playerAnimation.phase = 2;
+        playerAnimation.timer = 0;
+    } else {
+        if (playerAnimation.timer >= 40) {
+            if (playerAnimation.phase == 2) {
+                player.sprite = playerAnimation1;
+                playerAnimation.phase = 1;
+                playerAnimation.timer = 0;
+            } else if (player.phys.speed.x == 0 && player.phys.speed.y == 0) {
+                player.sprite = playerAnimation2;
+                playerAnimation.phase = 2;
+                playerAnimation.timer = 0;
             }
         }
     }
