@@ -90,7 +90,7 @@ class Monster {
         };
         this.health = new Damageable(health, onDeath);
 
-        this.weapon = weapons.peaShooter();
+        this.weapon = weapons.starter();
         this.aggroRadius = 400;
         this.behavior = new Behavior();
 
@@ -111,3 +111,42 @@ class Monster {
         return this.heart.alive;
     }
 }
+
+function monsterHouse(chanceMod) {
+    let chance = 0.30;
+    for (let mon in monsters) {
+        if (Math.random() > chance) {
+            chance /= 2 / (chanceMod + 1.0);
+            continue;
+        }
+        return monsters[mon]();
+    }
+    return monsters.lost();
+    // todo return any
+}
+
+var monsters = {
+    lost: () => { var mon = new Monster("Enemy6.png", 10, '#9500fc');
+                  mon.weapon = weapons.peaShooter();
+                  return mon;},
+
+    restless: () => { var mon = new Monster("Enemy2.png", 10, '#ff4416');
+                      mon.weapon = weapons.shotgun();
+                      return mon;},
+
+//    cursed: () => { return new Monster("Enemy4.png", 10, '#FF8800'); },
+
+    suffering: () => { var mon = new Monster("Enemy3.png", 10, '#1238ff');
+                       mon.weapon = weapons.laser();
+                       return mon;},
+
+    tormented: () => { var mon = new Monster("Enemy5.png", 10, '#f5b500');
+                       mon.weapon = weapons.homing();
+                       return mon;},
+
+//    evil: () => { return new Monster("Enemy1.png", 10, '#FF8800'); },
+
+    devilish: () => {  var mon = new Monster("Enemy7.png", 10, '#3affd8');
+                       mon.weapon = weapons.lawnMower();
+                       return mon;},
+};
