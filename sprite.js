@@ -8,7 +8,7 @@ class Sprite {
 
         this.pos = { x: 0, y: 0 };
         this.image = new Image();
-        this.image.onload = onload
+        this.image.onload = onload;
 
         // Start loading the image
         this.image.src = this.filepath;
