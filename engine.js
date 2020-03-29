@@ -551,6 +551,19 @@ function draw() {
         gameObjects.playerProjectiles.push(proj);
     }
 
+    // Spawn enemy projectiles on player interaction
+    for (var i = 0; i < gameObjects.enemies.length; i++) {
+        let mon = gameObjects.enemies[i];
+        mon.weapon.load(time);
+        if (mon.isAggressiveAgainst(player) && mon.weapon.ready) {
+            let theta = weaponAngle(mon.phys.pos, player.phys.pos);
+            let direction = { x: Math.sin(theta), y: Math.cos(theta) };
+            let proj = mon.weapon.shoot(time, direction);
+            proj.phys.moveTo(mon.phys.pos);
+            gameObjects.enemyProjectiles.push(proj);
+        }
+    }
+
     // Check all collisions
     for (var i = 0; i < collisionGroups.length; i++) {
         let firstGroup = collisionGroups[i];

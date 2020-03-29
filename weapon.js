@@ -3,6 +3,10 @@ function weaponAngle(pos1, pos2) {
     return (Math.PI / 2) - Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x);
 }
 
+function weaponDistance(pos1, pos2) {
+    return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
+}
+
 class Weapon {
     constructor(projectile, amount, spread, rate, damage) {
         this.projectile = projectile;
