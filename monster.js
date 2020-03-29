@@ -38,10 +38,16 @@ class Monster {
 
         var weaponProjectile = new Projectile("crosshair.png", {x: 0, y: 0}, {x: 10, y: 10}, 1500);
         this.weapon = new Weapon(weaponProjectile, 1, 0, 250, 2);
+        this.aggroRadius = 400;
 
         this.phys.onMove = (pos) => {
             this.body.pos = pos;
         };
+    }
+
+    isAggressiveAgainst(other) {
+        let distanceTo = weaponDistance(this.phys.pos, other.phys.pos);
+        return distanceTo < this.aggroRadius;
     }
 
     update(now) {
