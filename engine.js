@@ -384,7 +384,7 @@ function draw() {
     player.weapon.load(time);
     if (view.mouse.pressed && player.weapon.ready) {
         let mouse = view.viewToWorld(view.mouse);
-        let theta = weaponAngle(player.phys.pos.x, player.phys.pos.y, mouse.x, mouse.y);
+        let theta = weaponAngle(player.phys.pos, mouse);
         let direction = { x: Math.sin(theta), y: Math.cos(theta) };
         let proj = player.weapon.shoot(time, direction);
         proj.phys.moveTo(player.phys.pos);
