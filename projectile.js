@@ -14,6 +14,8 @@ class Projectile {
         this.phys.onMove = (pos) => {
             this.body.pos = pos;
         };
+
+        this.weaponPickup = null;
     }
 
     clone() {

@@ -101,7 +101,8 @@ var gameObjects = {
     projectiles: [],
     enemyProjectiles: [],
     player: [],
-    playerProjectiles: []
+    playerProjectiles: [],
+    weaponPickups: []
 };
 
 function msToTime(s) {
@@ -166,10 +167,11 @@ player.health.onHit = () => {
 player.weapon = weapons.starter();
 
 var collisionGroups = [
-    {array: 'enemies', ignore: ['enemyProjectiles', 'player']},
-    {array: 'enemyProjectiles', ignore: ['enemies']},
+    {array: 'enemies', ignore: ['enemyProjectiles', 'player', 'weaponPickups']},
+    {array: 'enemyProjectiles', ignore: ['enemies', 'weaponPickups']},
     {array: 'player', ignore: ['playerProjectiles', 'enemies']},
-    {array: 'playerProjectiles', ignore: ['player']}
+    {array: 'playerProjectiles', ignore: ['player', 'weaponPickups']},
+    {array: 'weaponPickups', ignore: ['enemies', 'enemyProjectiles', 'playerProjectiles']}
 ];
 
 // Create an array for storing active particle effects
@@ -735,6 +737,12 @@ function draw() {
                 view.drawSprite(item);
                 // view.drawRectangle(item.body.rect); DEBUG
             } else {
+                if (item instanceof Monster && Math.random() < 0.1) {
+                    var drop = new Projectile(item.weapon.dropname, Math.random(), 5000);
+                    drop.weaponPickup = item.weapon;
+                    drop.phys.moveTo(item.phys.pos);
+                    gameObjects.weaponPickups.push(drop);
+                }
                 array.splice(i--, 1);
             }
         }
