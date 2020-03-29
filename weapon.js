@@ -1,6 +1,6 @@
 
-function weaponAngle(x1, y1, x2, y2) {
-    return (Math.PI / 2) - Math.atan2(y2 - y1, x2 - x1);
+function weaponAngle(pos1, pos2) {
+    return (Math.PI / 2) - Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x);
 }
 
 class Weapon {
