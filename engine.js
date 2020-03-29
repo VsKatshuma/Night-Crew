@@ -134,7 +134,7 @@ function stateTransition(toState) {
         startTime = Date.now();
     } else if (toState == 2) {
         // Save finish time and make all monsters wander away
-        finishTime = Date.now();
+        finishTime = Date.now() - startTime;
         for (var i = 0; i < gameObjects.enemies.length; i++) {
             let mon = gameObjects.enemies[i];
             mon.behavior.modes.idle = 1.0;
@@ -142,6 +142,9 @@ function stateTransition(toState) {
             mon.behavior.modes.angry = -1.0;
             mon.weapon.rate = 999999999;
         }
+		// Print the playtime
+		var message = "Your Limbo Life lasted " + msToTime(finishTime);
+		console.log(message);
     } else {
         throw "Unknown gameState " + toState;
     }
