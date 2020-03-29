@@ -13,6 +13,17 @@ class Sprite {
 
         // Start loading the image
         this.image.src = this.filepath;
+        this.nextImage = null;
+    }
+
+    changeImage(filename) {
+        this.nextImage = new Image();
+        this.nextImage.onload = () => {
+            this.filename = filename
+            this.filepath = spritesPath + filename;
+            this.image = this.nextImage;
+        };
+        this.nextImage.src = spritesPath + filename;
     }
 
     drawTo(context) {
