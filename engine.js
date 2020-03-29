@@ -583,7 +583,7 @@ function draw() {
             let item = array[i];
             if (item.update(time)) {
                 view.drawSprite(item);
-                view.drawRectangle(item.body.rect);
+                // view.drawRectangle(item.body.rect); DEBUG
             } else {
                 array.splice(i--, 1);
             }
@@ -596,11 +596,6 @@ function draw() {
         titleImage.pos.y = view.height / 4;
         titleImage.drawTo(g);
     }
-
-    // Update and draw player character
-    player.update(time);
-    view.drawSprite(player);
-    view.drawRectangle(player.body.rect);
 
     // Draw health bar if game has been started
     if (gameState != 0) {
