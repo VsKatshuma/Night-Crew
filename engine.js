@@ -542,7 +542,7 @@ function draw() {
                 speedX = -Math.random();
                 speedY = -1 + (Math.random() * 2);
             }
-            var mon = new Monster("Enemy2.png", 10, '#FF8800');
+            var mon = monsterHouse(0.0);
             mon.phys.pos = { x: x, y: y };
 
             if (timePassed < 0.07) {
@@ -649,11 +649,17 @@ function draw() {
     player.weapon.load(time);
     if (view.mouse.pressed && player.weapon.ready && gameState != 2) {
         let mouse = view.viewToWorld(view.mouse);
+
         let theta = weaponAngle(player.phys.pos, mouse);
-        let direction = { x: Math.sin(theta), y: Math.cos(theta) };
-        let proj = player.weapon.shoot(time, direction);
-        proj.phys.moveTo(player.phys.pos);
-        gameObjects.playerProjectiles.push(proj);
+        let amount = player.weapon.amount + Math.round(variance(player.weapon.amountVar));
+        for (let i = 0; i < amount; i++) {
+            let spread = variance(player.weapon.spread);
+            let direction = { x: Math.sin(theta + spread), y: Math.cos(theta + spread) };
+            let proj = player.weapon.shoot(time, direction);
+            proj.phys.moveTo(player.phys.pos);
+            gameObjects.playerProjectiles.push(proj);
+        }
+        player.weapon.ready = false;
     }
 
     // Update enemy logic
@@ -667,16 +673,22 @@ function draw() {
                               y: mon.behavior.moveSpeed * mon.behavior.moveDirection.y};
         } else {
             let behavior = mon.behaviorAgainst(player);
-            let theta = weaponAngle(mon.phys.pos, player.phys.pos);
-            let playerDirection = { x: Math.sin(theta), y: Math.cos(theta) };
 
+            let theta = weaponAngle(mon.phys.pos, player.phys.pos);
+            let amount = mon.weapon.amount + Math.round(variance(mon.weapon.amountVar));
             if (behavior.attack && mon.weapon.ready) {
-                let proj = mon.weapon.shoot(time, playerDirection);
-                proj.phys.moveTo(mon.phys.pos);
-                gameObjects.enemyProjectiles.push(proj);
+                for (let i = 0; i < amount; i++) {
+                    let spread = variance(mon.weapon.spread);
+                    let playerDirection = { x: Math.sin(theta + spread), y: Math.cos(theta + spread) };
+                    let proj = mon.weapon.shoot(time, playerDirection);
+                    proj.phys.moveTo(mon.phys.pos);
+                    gameObjects.enemyProjectiles.push(proj);
+                }
+                mon.weapon.ready = false;
             }
 
             if (behavior.follow) {
+                let playerDirection = { x: Math.sin(theta), y: Math.cos(theta) };
                 mon.phys.speed = {x: mon.behavior.moveSpeed * playerDirection.x,
                                   y: mon.behavior.moveSpeed * playerDirection.y};
             }
