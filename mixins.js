@@ -24,8 +24,7 @@ function collide(first, second) {
     objs[second.constructor.name.toLowerCase()] = second;
 
     if (objs.monster && objs.projectile) {
-        var foo = objs.monster.health.takeDamage(objs.projectile.damage);
-        console.log(foo);
+        objs.monster.health.takeDamage(objs.projectile.damage);
         objs.projectile.heart.alive = false;
     }
 }
