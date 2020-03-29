@@ -480,7 +480,7 @@ function draw() {
     if (gameState != 0) {
         let timePassed = (Date.now() - startTime) / 300000; // 5 minutes
         let enemyCount = gameObjects.enemies.length;
-        if (Math.random() < 0.033 && enemyCount < timePassed * 50) {
+        if (Math.random() < 0.033 && enemyCount < timePassed * 50 + 1) {
             let seed = Math.random();
             let x, y, speedX, speedY = 0;
             if (seed < 0.25) {
@@ -505,8 +505,16 @@ function draw() {
                 speedY = -1 + (Math.random() * 2);
             }
             var mon = new Monster("Enemy2.png", 10);
-            //mon.phys.speed = { x: (speedX + 0.1) * 5, y: (speedY + 0.1) * 5 };
             mon.phys.pos = { x: x, y: y };
+
+            if (timePassed < 0.07) {
+                // makes monster passive for first 20 seconds in
+                mon.behavior.mode = 'idle';
+                mon.behavior.modes.idle = 1.0;
+                mon.behavior.modes.curious = 0.3;
+                mon.behavior.modes.angry = -1.0;
+                mon.moveSpeed = Math.random() * 0.5 + 0.1;
+            }
             gameObjects.enemies.push(mon);
         }
     }
