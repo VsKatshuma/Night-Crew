@@ -14,7 +14,7 @@ var upArrow, leftArrow, downArrow, rightArrow = false;
 // Handle keyboard events
 document.onkeydown = function (event) {
     event = event || window.event;
-    console.log(event.code);
+    //console.log(event.code);
     if (event.code === 'KeyW' && !w) {
         w = true;
     }
@@ -145,12 +145,12 @@ var healthBarBottom = 50;
 var healthBarMiddle = 35; // Spawning height of effects
 
 // Initialize background elements
-var doodad1 = new Sprite('tombstone1.png', undefined);
-var doodad2 = new Sprite('tombstone2.png', undefined);
-var doodad3 = new Sprite('cross1.png', undefined);
-var doodad4 = new Sprite('cross2.png', undefined);
-var doodad5 = new Sprite('deadGrass.png', undefined);
-var doodad6 = new Sprite('bush.png', undefined);
+var doodad1 = new Sprite('Tombstone1.png', undefined);
+var doodad2 = new Sprite('Tombstone2.png', undefined);
+var doodad3 = new Sprite('Cross1.png', undefined);
+var doodad4 = new Sprite('Cross2.png', undefined);
+var doodad5 = new Sprite('DeadGrass.png', undefined);
+var doodad6 = new Sprite('Bush.png', undefined);
 var tileAll1 = new Sprite('tileAll1.png', undefined);
 var tileAll2 = new Sprite('tileAll2.png', undefined);
 var tileAll3 = new Sprite('tileAll3.png', undefined);
