@@ -276,7 +276,7 @@ function stateTransition(toState) {
             playerAnimation.phase = 3;
             playerAnimation.timer = -5;
         };
-        player.weapon = weapons.starter();
+        player.weapon = [weapons.starter()];
         doodadGridCrossroad = {x: Math.floor(doodadGridSize / 2), y: Math.floor(doodadGridSize / 2)};
         totalShifts = {x: 0, y: 0};
         initializeDoodads();
@@ -639,20 +639,24 @@ function draw() {
     g.globalAlpha = 1.0;
 
     // Spawn weapon projectiles on mouse press
-    player.weapon.load(time);
-    if (view.mouse.pressed && player.weapon.ready && gameState != 2) {
-        let mouse = view.viewToWorld(view.mouse);
+    for (var k = 0; k < player.weapon.length; k++) {
+        let weapon = player.weapon[k];
 
-        let theta = weaponAngle(player.phys.pos, mouse);
-        let amount = player.weapon.amount + Math.round(variance(player.weapon.amountVar));
-        for (let i = 0; i < amount; i++) {
-            let spread = variance(player.weapon.spread);
-            let direction = { x: Math.sin(theta + spread), y: Math.cos(theta + spread) };
-            let proj = player.weapon.shoot(time, direction);
-            proj.phys.moveTo(player.phys.pos);
-            gameObjects.playerProjectiles.push(proj);
+        weapon.load(time);
+        if (view.mouse.pressed && weapon.ready && gameState != 2) {
+            let mouse = view.viewToWorld(view.mouse);
+
+            let theta = weaponAngle(player.phys.pos, mouse);
+            let amount = weapon.amount + Math.round(variance(weapon.amountVar));
+            for (let i = 0; i < amount; i++) {
+                let spread = variance(weapon.spread);
+                let direction = { x: Math.sin(theta + spread), y: Math.cos(theta + spread) };
+                let proj = weapon.shoot(time, direction);
+                proj.phys.moveTo(player.phys.pos);
+                gameObjects.playerProjectiles.push(proj);
+            }
+            weapon.ready = false;
         }
-        player.weapon.ready = false;
     }
 
     // Update enemy logic

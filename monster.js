@@ -90,7 +90,7 @@ class Monster {
         };
         this.health = new Damageable(health, onDeath);
 
-        this.weapon = weapons.starter();
+        this.weapons = [weapons.starter()];
         this.aggroRadius = 400;
         this.behavior = new Behavior();
 

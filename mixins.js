@@ -25,7 +25,16 @@ function collide(first, second) {
 
     if (objs.monster && objs.projectile) {
         if (objs.projectile.weaponPickup) {
-            objs.monster.weapon = objs.projectile.weaponPickup;
+            var neww = true;
+            for (var i = 0; i < objs.monster.weapon.length; i++) {
+                if (objs.monster.weapon[i].dropname === objs.projectile.weaponPickup.dropname) {
+                    neww = false;
+                    break;
+                }
+            }
+            if (neww) {
+                objs.monster.weapon.push(objs.projectile.weaponPickup)
+            }
         } else {
             objs.monster.health.takeDamage(objs.projectile.damage);
         }

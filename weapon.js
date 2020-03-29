@@ -62,7 +62,7 @@ class Weapon {
 //spritename, speed, speedVar, lifetime, lifetimeVar, amount, amountVar, spread, spreadVar, rate, damage
 var weapons = {
     starter:    () => { return new Weapon("PlayerBullet_32.png",     "Weapon_1_Pistol.png",         15, 1,  1500, 0,    1,  0,   0.1,        0,    555,  2); },
-    peaShooter:    () => { return new Weapon("EnemyBulletSmall.png", "Weapon_1_Pistol.png",         10, 2,  1500, 0,    1,  0,   0.2,        0,    2222, 4); },
+    peaShooter:    () => { return new Weapon("EnemyBulletSmall.png", "Weapon_6_TimeBomb.png",         10, 2,  1500, 0,    1,  0,   0.2,        0,    2222, 4); },
     laser:      () => { return new Weapon("EnemyBulletSmall.png",    "Weapon_3_Laser.png",          15, 5,  1500, 250,  15, 0,   0,          0,    3500, 2); },
     shotgun:    () => { return new Weapon("EnemyBulletSmall.png",    "Weapon_2_Shotgun.png",        7,  1,  1111, 0,    4,  1,   Math.PI/8,  0,    1000, 4); },
     homing:     () => { return new Weapon("EnemyBulletSmall.png",    "Weapon_5_HomingMissiles.png", 30, 5,  1000, 0,    1,  0,   Math.PI/32, 0,    2222, 4); },
