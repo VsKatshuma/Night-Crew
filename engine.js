@@ -535,7 +535,7 @@ function draw() {
                 speedX = -Math.random();
                 speedY = -1 + (Math.random() * 2);
             }
-            var mon = monsterHouse(0.0);
+            var mon = monsterHouse(timePassed * 2);
             mon.phys.pos = { x: x, y: y };
 
             if (timePassed < 0.07) {
@@ -732,7 +732,7 @@ function draw() {
                 view.drawSprite(item);
                 // view.drawRectangle(item.body.rect); DEBUG
             } else {
-                if (item instanceof Monster && Math.random() < 0.1) {
+                if (item instanceof Monster && Math.random() < 0.25) {
                     var drop = new Projectile(item.weapon.dropname, Math.random(), 5000);
                     drop.weaponPickup = item.weapon;
                     drop.phys.moveTo(item.phys.pos);

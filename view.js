@@ -31,6 +31,9 @@ class View {
     // Draws an object to viewport
     // The object must have both sprite and phys members
     drawSprite(drawable) {
+        if (!drawable.sprite.filename) {
+            return;
+        }
         drawable.sprite.pos = this.worldToView(drawable.phys.pos);
         drawable.sprite.drawTo(this.gContext);
     }
