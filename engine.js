@@ -112,7 +112,7 @@ var gameObjects = {
 };
 
 // Initialize player
-gameObjects.player.push(new Monster("Player_Idle1.png"))
+gameObjects.player.push(new Monster("Player_Idle1.png", 100));
 var player = gameObjects.player[0];
 player.weapon = weapons.starter();
 
