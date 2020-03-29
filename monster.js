@@ -26,6 +26,52 @@ class Player {
 }
 */
 
+class Behavior {
+    constructor() {
+        this.modes = {
+            idle: Math.random(), // walking around
+            angry: Math.random(), // attack + follow
+            curious: Math.random() // follow
+        };
+
+        var keys = Object.keys(this.modes);
+        this.mode = keys[keys.length * Math.random() << 0];
+        this.rollInterval = Math.random() * 10000 + 5000
+
+        this.aggroRadius = this.rollInterval / 20 + 100;
+        this.followRadius = this.rollInterval / 50 + 100;
+        this.moveSpeed = Math.random() * 3 + 0.5;
+        this.moveDirection = {x: Math.random(), y: Math.random()};
+        this.stamp = 0;
+        this.roll(Date.now(), true);
+    }
+
+    roll(time, force) {
+        if (time - this.stamp > this.rollInterval) {
+            this.stamp = time;
+            if (Math.random() > 0.80 && !force) {
+                return;
+            }
+
+            let rand = Math.random();
+            let roll = rand + 0.1;
+            this.moveDirection = {x: Math.sin(2 * Math.PI * rand),
+                                  y: Math.cos(2 * Math.PI * rand)};
+            let mode = this.mode;
+            let lowest = 10;
+            for (var m in this.modes) {
+                let modeRoll = this.modes[m] + roll;
+                if (modeRoll > 1.0 && modeRoll < lowest) {
+                    lowest = modeRoll;
+                    this.mode = m;
+                }
+            }
+        }
+    }
+
+};
+
+
 class Monster {
     constructor(spritefile, health) {
         this.phys = new Movable();
@@ -38,15 +84,18 @@ class Monster {
 
         this.weapon = weapons.peaShooter();
         this.aggroRadius = 400;
+        this.behavior = new Behavior();
 
         this.phys.onMove = (pos) => {
             this.body.pos = pos;
         };
     }
 
-    isAggressiveAgainst(other) {
+    behaviorAgainst(other) {
         let distanceTo = weaponDistance(this.phys.pos, other.phys.pos);
-        return distanceTo < this.aggroRadius;
+        let shouldFollow = this.behavior.mode !== 'idle' && distanceTo > this.behavior.followRadius;
+        let shouldAttack = this.behavior.mode === 'angry' && distanceTo < this.behavior.aggroRadius;
+        return {follow: shouldFollow, attack: shouldAttack};
     }
 
     update(now) {

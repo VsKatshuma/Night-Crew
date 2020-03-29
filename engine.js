@@ -467,7 +467,7 @@ function draw() {
                 speedY = -1 + (Math.random() * 2);
             }
             var mon = new Monster("Enemy2.png", 10);
-            mon.phys.speed = { x: (speedX + 0.1) * 5, y: (speedY + 0.1) * 5 };
+            //mon.phys.speed = { x: (speedX + 0.1) * 5, y: (speedY + 0.1) * 5 };
             mon.phys.pos = { x: x, y: y };
             gameObjects.enemies.push(mon);
         }
@@ -572,17 +572,32 @@ function draw() {
         gameObjects.playerProjectiles.push(proj);
     }
 
-    // Spawn enemy projectiles on player interaction
+    // Update enemy logic
     for (var i = 0; i < gameObjects.enemies.length; i++) {
         let mon = gameObjects.enemies[i];
+        mon.behavior.roll(time);
         mon.weapon.load(time);
-        if (mon.isAggressiveAgainst(player) && mon.weapon.ready) {
+
+        if (mon.behavior.mode === 'idle') {
+            mon.phys.speed = {x: mon.behavior.moveSpeed * mon.behavior.moveDirection.x,
+                              y: mon.behavior.moveSpeed * mon.behavior.moveDirection.y};
+        } else {
+            let behavior = mon.behaviorAgainst(player);
             let theta = weaponAngle(mon.phys.pos, player.phys.pos);
-            let direction = { x: Math.sin(theta), y: Math.cos(theta) };
-            let proj = mon.weapon.shoot(time, direction);
-            proj.phys.moveTo(mon.phys.pos);
-            gameObjects.enemyProjectiles.push(proj);
+            let playerDirection = { x: Math.sin(theta), y: Math.cos(theta) };
+
+            if (behavior.attack && mon.weapon.ready) {
+                let proj = mon.weapon.shoot(time, playerDirection);
+                proj.phys.moveTo(mon.phys.pos);
+                gameObjects.enemyProjectiles.push(proj);
+            }
+
+            if (behavior.follow) {
+                mon.phys.speed = {x: mon.behavior.moveSpeed * playerDirection.x,
+                                  y: mon.behavior.moveSpeed * playerDirection.y};
+            }
         }
+
     }
 
     // Check all collisions
