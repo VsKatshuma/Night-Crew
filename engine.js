@@ -78,25 +78,6 @@ document.onmousemove = function(event) {
     view.mouse.y = event.clientY;
 };
 
-// Initialize game state and play time
-var gameState = null; // 0 = title, 1 = game, 2 = failure state
-var startTime = NaN;
-var finishTime = NaN;
-
-function stateTransition(toState) {
-    if (toState == 0) {
-        startTime = NaN;
-        finishTime = NaN;
-    } else if (toState == 1) {
-        startTime = Date.now();
-    } else if (toState == 2) {
-        finishTime = Date.now();
-    } else {
-        throw "Unknown gameState " + toState;
-    }
-    gameState = toState;
-}
-
 function sound(src) {
     this.sound = document.createElement("audio");
     this.sound.src = src;
@@ -114,9 +95,6 @@ function sound(src) {
 var damage = new sound("Sounds/heavyplasma2.wav");
 var death = new sound("Sounds/heavyplasmahit2.wav");
 
-// Enter intro state
-stateTransition(0);
-
 // Create arrays for storing game objects
 var gameObjects = {
     enemies: [],
@@ -125,6 +103,36 @@ var gameObjects = {
     player: [],
     playerProjectiles: []
 };
+
+// Initialize game state and play time
+var gameState = null; // 0 = title, 1 = game, 2 = failure state
+var startTime = NaN;
+var finishTime = NaN;
+
+function stateTransition(toState) {
+    if (toState == 0) {
+        startTime = NaN;
+        finishTime = NaN;
+    } else if (toState == 1) {
+        startTime = Date.now();
+    } else if (toState == 2) {
+        // Save finish time and make all monsters wander away
+        finishTime = Date.now();
+        for (var i = 0; i < gameObjects.enemies.length; i++) {
+            let mon = gameObjects.enemies[i];
+            mon.behavior.modes.idle = 1.0;
+            mon.behavior.modes.curious = -1.0
+            mon.behavior.modes.angry = -1.0;
+            mon.weapon.rate = 999999999;
+        }
+    } else {
+        throw "Unknown gameState " + toState;
+    }
+    gameState = toState;
+}
+
+// Enter intro state
+stateTransition(0);
 
 // Initialize player
 gameObjects.player.push(new Monster("Player_Idle1.png", 100));
@@ -476,8 +484,8 @@ function draw() {
         }
     //}
 
-    // Create enemies if game has started
-    if (gameState != 0) {
+    // Create enemies if game is in progress
+    if (gameState == 1) {
         let timePassed = (Date.now() - startTime) / 300000; // 5 minutes
         let enemyCount = gameObjects.enemies.length;
         if (Math.random() < 0.033 && enemyCount < timePassed * 50 + 1) {
@@ -576,7 +584,7 @@ function draw() {
     }
 
     // Create floating particles around the player
-    if (Math.random() < 0.13) {
+    if (Math.random() < 0.13 && gameState != 2) {
         let theta = (2 * Math.PI) * Math.random();
         particles.push({x: player.phys.pos.x, y: player.phys.pos.y, speedX: Math.cos(theta), speedY: Math.sin(theta), framesAlive: 120});
     }
@@ -609,7 +617,7 @@ function draw() {
 
     // Spawn weapon projectiles on mouse press
     player.weapon.load(time);
-    if (view.mouse.pressed && player.weapon.ready) {
+    if (view.mouse.pressed && player.weapon.ready && gameState != 2) {
         let mouse = view.viewToWorld(view.mouse);
         let theta = weaponAngle(player.phys.pos, mouse);
         let direction = { x: Math.sin(theta), y: Math.cos(theta) };
@@ -742,10 +750,16 @@ function draw() {
         g.fillText(fps + " fps", 6, 16);
     }
 
-    // Start the game
+    // Start the game if player had walked far away from the start
     if (gameState == 0 && Math.sqrt((player.phys.pos.x * player.phys.pos.x) + (player.phys.pos.y * player.phys.pos.y)) > 1900) {
         stateTransition(1);
     }
+
+    // End the game if the player is dead
+    if (gameState == 1 && !player.heart.alive) {
+        stateTransition(2);
+    }
+
 
     requestAnimationFrame(draw);
 }
