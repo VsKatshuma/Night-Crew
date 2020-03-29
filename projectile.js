@@ -1,7 +1,7 @@
 
 class Projectile {
-    constructor(filename, pos, speed, lifetime) {
-        this.phys = new Movable(pos, speed);
+    constructor(filename, speed, lifetime) {
+        this.phys = new Movable({x: 0, y: 0}, {x: speed, y: speed});
         this.body = new Collidable();
         this.sprite = new Sprite(filename, () => { this.body.useSprite(this.sprite) });
 
@@ -19,8 +19,7 @@ class Projectile {
     clone() {
         return new Projectile(
             this.sprite.filename,
-            {x: this.phys.pos.x, y: this.phys.pos.y},
-            {x: this.phys.speed.x, y: this.phys.speed.y},
+            this.phys.speed.x,
             this.heart.lifetime
         );
     }

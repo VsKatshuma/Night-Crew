@@ -8,8 +8,8 @@ function weaponDistance(pos1, pos2) {
 }
 
 class Weapon {
-    constructor(projectile, amount, spread, rate, damage) {
-        this.projectile = projectile;
+    constructor(spritename, speed, lifetime, amount, spread, rate, damage) {
+        this.projectile = new Projectile(spritename, speed, lifetime);
         this.amount = amount;
         this.spread = spread;
         this.rate = rate;
@@ -40,3 +40,8 @@ class Weapon {
         }
     }
 }
+
+var weapons = {
+    starter: () => { return new Weapon("PlayerBulletSmall.png", 15, 1500, 1, 0, 250, 2); },
+    peaShooter: () => { return new Weapon("EnemyBulletSmall.png", 7, 1000, 1, 0, 500, 1); }
+};

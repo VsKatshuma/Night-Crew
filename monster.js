@@ -36,8 +36,7 @@ class Monster {
         var onDeath = () => { this.heart.alive = false; };
         this.health = new Damageable(health, onDeath);
 
-        var weaponProjectile = new Projectile("crosshair.png", {x: 0, y: 0}, {x: 10, y: 10}, 1500);
-        this.weapon = new Weapon(weaponProjectile, 1, 0, 250, 2);
+        this.weapon = weapons.peaShooter();
         this.aggroRadius = 400;
 
         this.phys.onMove = (pos) => {
