@@ -73,10 +73,16 @@ class Behavior {
 
 
 class Monster {
-    constructor(spritefile, health) {
+    constructor(spritefile, health, color) {
         this.phys = new Movable();
         this.body = new Collidable();
+
+        this.color = color;
         this.sprite = new Sprite(spritefile, () => { this.body.useSprite(this.sprite) });
+        this.sprite.onDraw = (context) => {
+            context.shadowColor = this.color;
+            context.shadowBlur = 25;
+        };
 
         this.heart = new Destroyable();
         var onDeath = () => {

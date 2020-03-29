@@ -135,7 +135,7 @@ function stateTransition(toState) {
 stateTransition(0);
 
 // Initialize player
-gameObjects.player.push(new Monster("Player_Idle1.png", 100));
+gameObjects.player.push(new Monster("Player_Idle1.png", 100, '#00FFFF'));
 var player = gameObjects.player[0];
 var playerAnimation = {timer: 0, phase: 1};
 var playerAnimation1 = new Sprite('Player_Idle1.png', undefined);
@@ -517,7 +517,7 @@ function draw() {
                 speedX = -Math.random();
                 speedY = -1 + (Math.random() * 2);
             }
-            var mon = new Monster("Enemy2.png", 10);
+            var mon = new Monster("Enemy2.png", 10, '#FF8800');
             mon.phys.pos = { x: x, y: y };
 
             if (timePassed < 0.07) {
@@ -605,7 +605,7 @@ function draw() {
         particle.speedY *= 0.99;
         particle.framesAlive -= 1;
 
-        g.fillStyle = '#0088DD';
+        g.fillStyle = '#00CCCC';
         g.globalAlpha = particle.framesAlive / 120; // Particles emanating from the player have a lifespan of 2 seconds
         g.beginPath();
         let particleLocation = view.worldToView(particle);
