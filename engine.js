@@ -78,8 +78,29 @@ document.onmousemove = function(event) {
     view.mouse.y = event.clientY;
 };
 
-// Initialize game state
-var gameState = 0; // 0 = title, 1 = game, 2 = failure state
+// Initialize game state and play time
+var gameState = null; // 0 = title, 1 = game, 2 = failure state
+var startTime = NaN;
+var finishTime = NaN;
+
+function stateTransition(toState) {
+    if (toState == 0) {
+        startTime = NaN;
+        finishTime = NaN;
+    }
+    else if (toState == 1) {
+        startTime = Date.now();
+    }
+    else if (toState == 2) {
+        finishTime = Date.now();
+    }
+    else {
+        throw "Unknown gameState " + toState;
+    }
+}
+
+// Enter game state DEBUG
+stateTransition(1);
 
 // Create arrays for storing game objects
 var gameObjects = {
@@ -442,7 +463,9 @@ function draw() {
 
     // Create enemies if game has started
     if (gameState != 0) {
-        if (Math.random() < 0.033) {
+        let timePassed = (Date.now() - startTime) / 300000; // 5 minutes
+        let enemyCount = gameObjects.enemies.length;
+        if (Math.random() < 0.033 && enemyCount < timePassed * 50) {
             let seed = Math.random();
             let x, y, speedX, speedY = 0;
             if (seed < 0.25) {
