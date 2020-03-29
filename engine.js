@@ -8,7 +8,7 @@ var requestAnimationFrame = window.requestAnimationFrame ||
                           window.oRequestAnimationFrame ||
                           window.webkitRequestAnimationFrame;
 
-var w, a, s, d = false;
+var w, a, s, d, r = false;
 var upArrow, leftArrow, downArrow, rightArrow = false;
 
 // Handle keyboard events
@@ -26,6 +26,9 @@ document.onkeydown = function (event) {
     }
     if (event.code === 'KeyD' && !d) {
         d = true;
+    }
+    if (event.code === 'KeyR' && !r) {
+        r = true;
     }
     if (event.code === 'ArrowUp' && !upArrow) {
         upArrow = true;
@@ -51,6 +54,8 @@ document.onkeyup = function(event) {
         s = false;
     if (event.code === 'KeyD')
         d = false;
+    if (event.code === 'KeyR')
+        r = false;
     if (event.code === 'ArrowUp')
         upArrow = false;
     if (event.code === 'ArrowLeft')
@@ -94,15 +99,7 @@ function sound(src) {
 }
 var damage = new sound("Sounds/heavyplasma2.wav");
 var death = new sound("Sounds/heavyplasmahit2.wav");
-
-// Create arrays for storing game objects
-var gameObjects = {
-    enemies: [],
-    projectiles: [],
-    enemyProjectiles: [],
-    player: [],
-    playerProjectiles: []
-};
+var graveyard = new sound("Sounds/NEFFEXGraveyardByKaraokeLovers.mp3");
 
 function msToTime(s) {
 	// Pad to 2 or 3 digits, default is 2
@@ -121,49 +118,12 @@ function msToTime(s) {
 	return pad(hrs) + ':' + pad(mins) + ':' + pad(secs)
 }
 
-// Initialize game state and play time
-var gameState = null; // 0 = title, 1 = game, 2 = failure state
-var startTime = NaN;
-var finishTime = NaN;
-
-function stateTransition(toState) {
-    if (toState == 0) {
-        startTime = NaN;
-        finishTime = NaN;
-    } else if (toState == 1) {
-        startTime = Date.now();
-    } else if (toState == 2) {
-        // Save finish time and make all monsters wander away
-        finishTime = Date.now() - startTime;
-        for (var i = 0; i < gameObjects.enemies.length; i++) {
-            let mon = gameObjects.enemies[i];
-            mon.behavior.modes.idle = 1.0;
-            mon.behavior.modes.curious = -1.0
-            mon.behavior.modes.angry = -1.0;
-            mon.weapon.rate = 999999999;
-        }
-		// Print the playtime
-		var message = "Your Limbo Life lasted " + msToTime(finishTime);
-		console.log(message);
-    } else {
-        throw "Unknown gameState " + toState;
-    }
-    gameState = toState;
-}
-
-// Enter intro state
-stateTransition(0);
+// Create a holder for game object arrays
+var gameObjects;
 
 // Initialize player
-gameObjects.player.push(new Monster("Player_Idle1.png", 100, '#00FFFF'));
-var player = gameObjects.player[0];
+var player;
 var playerAnimation = {timer: 0, phase: 1};
-player.health.onHit = () => {
-    player.sprite.changeImage("Player_Hit.png");
-    playerAnimation.phase = 3;
-    playerAnimation.timer = -5;
-};
-player.weapon = weapons.starter();
 
 var collisionGroups = [
     {array: 'enemies', ignore: ['enemyProjectiles', 'player']},
@@ -211,111 +171,142 @@ var titleImagePosition = {x: -35, y: -200};
 var doodadInterval = 70;
 var screenSize = Math.max(view.width, view.height);
 var doodadGridSize = Math.ceil(screenSize * 1.2 / doodadInterval);
-if (doodadGridSize % 2 == 0) {
-    doodadGridSize++;
-}
-var doodadGridCrossroad = {x: Math.floor(doodadGridSize / 2), y: Math.floor(doodadGridSize / 2)}; // Where tile paths appear
-var totalShifts = {x: 0, y: 0}; // Where we are in relation to (0,0)
+if (doodadGridSize % 2 == 0) { doodadGridSize++; }
+var doodadGridCrossroad; // Where tile paths appear
+var totalShifts; // Where we are in relation to (0,0)
 var doodadGrid = new Array(doodadGridSize);
 for (var i = 0; i < doodadGridSize; i++) {
     doodadGrid[i] = new Array(doodadGridSize);
 }
 
 // Populate doodadGrid with background elements at (0,0)
-for (var y = 0; y < doodadGridSize; y++) {
-    for (var x = 0; x < doodadGridSize; x++) {
-        let noise = simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + x) * doodadInterval),
-                                ((Math.floor(player.phys.pos.y / doodadInterval) + y) * doodadInterval));
-        if (y == doodadGridCrossroad.y && x == doodadGridCrossroad.x) {
-            doodadGrid[y][x] = tileMiddle(noise);
-        } else if (y == doodadGridCrossroad.y) {
-            doodadGrid[y][x] = tileHorizontal(noise);
-        } else if (x == doodadGridCrossroad.x) {
-            doodadGrid[y][x] = tileVertical(noise);
-        } else {
-            doodadGrid[y][x] = randomDoodad(noise);
+function initializeDoodads() {
+    for (var y = 0; y < doodadGridSize; y++) {
+        for (var x = 0; x < doodadGridSize; x++) {
+            let noise = simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + x) * doodadInterval),
+                                    ((Math.floor(player.phys.pos.y / doodadInterval) + y) * doodadInterval));
+            if (y == doodadGridCrossroad.y && x == doodadGridCrossroad.x) {
+                doodadGrid[y][x] = tileMiddle(noise);
+            } else if (y == doodadGridCrossroad.y) {
+                doodadGrid[y][x] = tileHorizontal(noise);
+            } else if (x == doodadGridCrossroad.x) {
+                doodadGrid[y][x] = tileVertical(noise);
+            } else {
+                doodadGrid[y][x] = randomDoodad(noise);
+            }
         }
     }
 }
 
 // Functions for calculating random backround elements
 function tileMiddle(noise) {
-    if (Math.abs(noise) > 0.5) {
-        return tileAll1;
-    } else if (Math.abs(noise) > 0.35) {
-        return tileAll2;
-    } else if (Math.abs(noise) > 0.1) {
-        return tileAll3;
-    } else {
-        return;
-    }
+    if (Math.abs(noise) > 0.5) { return tileAll1; }
+    else if (Math.abs(noise) > 0.35) { return tileAll2; }
+    else if (Math.abs(noise) > 0.1) { return tileAll3; }
+    else { return; }
 }
 
 function tileHorizontal(noise) {
-    if (noise > 0.6) {
-        return tileAll1;
-    } else if (noise > 0.35) {
-        return tileAll2;
-    } else if (noise > 0.1) {
-        return tileAll3;
-    } else if (noise < -0.6) {
-        return tileHor1;
-    } else if (noise < -0.3) {
-        return tileHor2;
-    } else if (noise < -0.1) {
-        return tileHor3;
-    } else {
-        return;
-    }
+    if (noise > 0.6) { return tileAll1; }
+    else if (noise > 0.35) { return tileAll2; }
+    else if (noise > 0.1) { return tileAll3; }
+    else if (noise < -0.6) { return tileHor1; }
+    else if (noise < -0.3) { return tileHor2; }
+    else if (noise < -0.1) { return tileHor3; }
+    else { return; }
 }
 
 function tileVertical(noise) {
-    if (noise > 0.55) {
-        return tileAll1;
-    } else if (noise > 0.4) {
-        return tileAll2;
-    } else if (noise > 0.1) {
-        return tileAll3;
-    } else if (noise < -0.6) {
-        return tileVer1;
-    } else if (noise < -0.3) {
-        return tileVer2;
-    } else if (noise < -0.1) {
-        return tileVer3;
-    } else {
-        return;
-    }
+    if (noise > 0.55) { return tileAll1; }
+    else if (noise > 0.4) { return tileAll2; }
+    else if (noise > 0.1) { return tileAll3; }
+    else if (noise < -0.6) { return tileVer1; }
+    else if (noise < -0.3) { return tileVer2; }
+    else if (noise < -0.1) { return tileVer3; }
+    else { return; }
 }
 
 function randomDoodad(noise) {
-    if (noise > 0.85) {
-        return doodad1;
-    } else if (noise > 0.7) {
-        return doodad2;
-    } else if (noise > 0.55) {
-        return doodad3;
-    } else if (noise > 0.4) {
-        return doodad5;
-    } else {
-        return;
-    }
+    if (noise > 0.85) { return doodad1; }
+    else if (noise > 0.7) { return doodad2; }
+    else if (noise > 0.55) { return doodad3; }
+    else if (noise > 0.4) { return doodad5; }
+    else { return; }
 }
 
 // Define a border around player character for unloading and loading background elements
-var loadZoneLeft = Math.floor(player.phys.pos.x / doodadInterval) * doodadInterval;
-var loadZoneRight = (Math.floor(player.phys.pos.x / doodadInterval) + 1) * doodadInterval;
-var loadZoneUp = Math.floor(player.phys.pos.y / doodadInterval) * doodadInterval;
-var loadZoneDown = (Math.floor(player.phys.pos.y / doodadInterval) + 1) * doodadInterval;
+var loadZoneLeft, loadZoneRight, loadZoneUp, loadZoneDown;
+function initializeLoadZones() {
+    loadZoneLeft = Math.floor(player.phys.pos.x / doodadInterval) * doodadInterval;
+    loadZoneRight = (Math.floor(player.phys.pos.x / doodadInterval) + 1) * doodadInterval;
+    loadZoneUp = Math.floor(player.phys.pos.y / doodadInterval) * doodadInterval;
+    loadZoneDown = (Math.floor(player.phys.pos.y / doodadInterval) + 1) * doodadInterval;
+}
 
 // Fps counter variables
 var fps = 0;
 var timestamps = [];
 
+// Text that is updated and shown when player dies
+var gameOverText = "";
+
+// Initialize game state and play time
+var gameState = null; // 0 = title, 1 = game, 2 = failure state
+var startTime = NaN;
+var finishTime = NaN;
+
+function stateTransition(toState) {
+    if (toState == 0) {
+        graveyard.stop();
+        startTime = NaN;
+        finishTime = NaN;
+        gameObjects = {
+            enemies: [],
+            projectiles: [],
+            enemyProjectiles: [],
+            player: [],
+            playerProjectiles: []
+        };
+        gameObjects.player.push(new Monster("Player_Idle1.png", 100, '#00FFFF'));
+        player = gameObjects.player[0];
+        player.health.onHit = () => {
+            player.sprite.changeImage("Player_Hit.png");
+            playerAnimation.phase = 3;
+            playerAnimation.timer = -5;
+        };
+        player.weapon = weapons.starter();
+        doodadGridCrossroad = {x: Math.floor(doodadGridSize / 2), y: Math.floor(doodadGridSize / 2)};
+        totalShifts = {x: 0, y: 0};
+        initializeDoodads();
+        initializeLoadZones();
+    } else if (toState == 1) {
+        startTime = Date.now();
+        graveyard.play();
+    } else if (toState == 2) {
+        // Save finish time and make all monsters wander away
+        finishTime = Date.now() - startTime;
+        for (var i = 0; i < gameObjects.enemies.length; i++) {
+            let mon = gameObjects.enemies[i];
+            mon.behavior.modes.idle = 1.0;
+            mon.behavior.modes.curious = -1.0
+            mon.behavior.modes.angry = -1.0;
+            mon.weapon.rate = 999999999;
+        }
+		// Show playtime to player
+		gameOverText = "Your Limbo Life lasted " + msToTime(finishTime);
+    } else {
+        throw "Unknown gameState " + toState;
+    }
+    gameState = toState;
+}
+
+// Enter title screen
+stateTransition(0);
+
 // ***
 // Main gameplay loop, called every frame
 // ***
 function draw() {
-
     // Update view size in case window dimensions change
     view.updateSize();
 
@@ -798,6 +789,11 @@ function draw() {
         g.fillStyle = '#00FF00';
         g.font = '14px Helvetica';
         g.fillText(fps + " fps", 6, 16);
+
+        if (gameState == 2) {
+            g.fillText(gameOverText, view.width / 2 - 100, view.height / 2 - 10);
+            g.fillText("Press R to restart", view.width / 2 - 55, view.height / 2 + 10);
+        }
     }
 
     // Start the game if player had walked far away from the start
@@ -810,6 +806,10 @@ function draw() {
         stateTransition(2);
     }
 
+    // Restart the game
+    if (gameState == 2 && r) {
+        stateTransition(0);
+    }
 
     requestAnimationFrame(draw);
 }

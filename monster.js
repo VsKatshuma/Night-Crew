@@ -71,7 +71,6 @@ class Behavior {
 
 };
 
-
 class Monster {
     constructor(spritefile, health, color) {
         this.phys = new Movable();
