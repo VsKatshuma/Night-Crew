@@ -79,7 +79,7 @@ document.onmousemove = function(event) {
 };
 
 // Initialize game state
-var gameState = 1; // 0 = title, 1 = game, 2 = failure state
+var gameState = 0; // 0 = title, 1 = game, 2 = failure state
 
 // Create arrays for storing game objects
 var gameObjects = {
@@ -134,8 +134,8 @@ var buttonA = new Sprite('A.png', undefined);
 var buttonS = new Sprite('S.png', undefined);
 var buttonD = new Sprite('D.png', undefined);
 var buttonMouse = new Sprite('Mouse.png', undefined);
-var buttonStart = new Sprite('StartButton.png', undefined);
-var titleImage = new Sprite('TitleImage.png', undefined);
+var titleImage = new Sprite('TitleImageEdited.png', undefined);
+var titleImagePosition = {x: -35, y: -200};
 
 // Create a grid for storing active background elements
 var doodadInterval = 70;
@@ -145,6 +145,7 @@ if (doodadGridSize % 2 == 0) {
     doodadGridSize++;
 }
 var doodadGridCrossroad = {x: Math.floor(doodadGridSize / 2), y: Math.floor(doodadGridSize / 2)}; // Where tile paths appear
+var totalShifts = {x: 0, y: 0}; // Where we are in relation to (0,0)
 var doodadGrid = new Array(doodadGridSize);
 for (var i = 0; i < doodadGridSize; i++) {
     doodadGrid[i] = new Array(doodadGridSize);
@@ -339,21 +340,20 @@ function draw() {
         }
     }
 
-    // Follow player's position with view if game has been started
-    if (gameState != 0) {
+    // Follow player's position with view
+    //if (gameState != 0) {
         view.x = player.phys.pos.x - view.width / 2;
         view.y = player.phys.pos.y - view.height / 2;
-    }
+    //}
 
     // Unload and load background elements if necessary
-    if (gameState != 0) {
+    //if (gameState != 0) {
         if (player.phys.pos.y < loadZoneUp) {
-            //console.log("Shifting load zone up. New loadZoneUp: ", loadZoneUp);
             let loadArray = new Array(doodadGridSize);
             for (var x = 0; x < doodadGridSize; x++) {
                 let noise = simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + x) * doodadInterval),
                                         (Math.floor(player.phys.pos.y / doodadInterval) * doodadInterval));
-                if (doodadGridCrossroad.y == doodadGridSize - 1) {
+                if (doodadGridCrossroad.y /*% doodadGridSize*/ == doodadGridSize - 1) {
                     loadArray[x] = doodadGridCrossroad.x == x ? tileMiddle(noise) : tileHorizontal(noise);
                 } else {
                     loadArray[x] = doodadGridCrossroad.x == x ? tileVertical(noise) : randomDoodad(noise);
@@ -365,16 +365,17 @@ function draw() {
             loadZoneDown -= doodadInterval;
             // Keep track of tile path position
             doodadGridCrossroad.y++;
+            totalShifts.y--;
             if (doodadGridCrossroad.y == doodadGridSize) {
                 doodadGridCrossroad.y = 0;
             }
+            //console.log("Shifting load zone up. New loadZoneUp: ", loadZoneUp);
         } else if (player.phys.pos.y > loadZoneDown) {
-            //console.log("Shifting load zone down. New loadZoneDown: ", loadZoneDown);
             let loadArray = new Array(doodadGridSize);
             for (var x = 0; x < doodadGridSize; x++) {
                 let noise = simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + x) * doodadInterval),
                                         ((Math.floor(player.phys.pos.y / doodadInterval) + (doodadGridSize - 1)) * doodadInterval));
-                if (doodadGridCrossroad.y == 0) {
+                if (doodadGridCrossroad.y /*% doodadGridSize*/ == 0) {
                     loadArray[x] = doodadGridCrossroad.x == x ? tileMiddle(noise) : tileHorizontal(noise);
                 } else {
                     loadArray[x] = doodadGridCrossroad.x == x ? tileVertical(noise) : randomDoodad(noise);
@@ -386,17 +387,18 @@ function draw() {
             loadZoneDown += doodadInterval;
             // Keep track of tile path position
             doodadGridCrossroad.y--;
+            totalShifts.y++;
             if (doodadGridCrossroad.y == -1) {
                 doodadGridCrossroad.y = doodadGridSize - 1;
             }
+            //console.log("Shifting load zone down. New loadZoneDown: ", loadZoneDown);
         }
         if (player.phys.pos.x < loadZoneLeft) {
-            //console.log("Shifting load zone left. New loadZoneLeft: ", loadZoneLeft);
             for (var y = 0; y < doodadGridSize; y++) {
                 let noise = simplexNoise((Math.floor(player.phys.pos.x / doodadInterval) * doodadInterval),
                                         ((Math.floor(player.phys.pos.y / doodadInterval) + y) * doodadInterval));
                 doodadGrid[y].pop();
-                if (doodadGridCrossroad.x == doodadGridSize - 1) {
+                if (doodadGridCrossroad.x /*% doodadGridSize*/ == doodadGridSize - 1) {
                     let tile = doodadGridCrossroad.y == y ? tileMiddle(noise) : tileVertical(noise);
                     doodadGrid[y].unshift(tile);
                 } else {
@@ -408,16 +410,17 @@ function draw() {
             loadZoneRight -= doodadInterval;
             // Keep track of tile path position
             doodadGridCrossroad.x++;
+            totalShifts.x--;
             if (doodadGridCrossroad.x == doodadGridSize) {
                 doodadGridCrossroad.x = 0;
             }
+            //console.log("Shifting load zone left. New loadZoneLeft: ", loadZoneLeft);
         } else if (player.phys.pos.x > loadZoneRight) {
-            //console.log("Shifting load zone right. New loadZoneRight: ", loadZoneRight);
             for (var y = 0; y < doodadGridSize; y++) {
                 let noise = simplexNoise(((Math.floor(player.phys.pos.x / doodadInterval) + (doodadGridSize - 1)) * doodadInterval),
                                         ((Math.floor(player.phys.pos.y / doodadInterval) + y) * doodadInterval));
                 doodadGrid[y].shift();
-                if (doodadGridCrossroad.x == 0) {
+                if (doodadGridCrossroad.x /*% doodadGridSize*/ == 0) {
                     let tile = doodadGridCrossroad.y == y ? tileMiddle(noise) : tileVertical(noise);
                     doodadGrid[y].push(tile);
                 } else {
@@ -429,13 +432,15 @@ function draw() {
             loadZoneRight += doodadInterval;
             // Keep track of tile path position
             doodadGridCrossroad.x--;
+            totalShifts.x++;
             if (doodadGridCrossroad.x == -1) {
                 doodadGridCrossroad.x = doodadGridSize - 1;
             }
+            //console.log("Shifting load zone right. New loadZoneRight: ", loadZoneRight);
         }
-    }
+    //}
 
-    // Create enemies if game has been started
+    // Create enemies if game has started
     if (gameState != 0) {
         if (Math.random() < 0.033) {
             let seed = Math.random();
@@ -483,22 +488,29 @@ function draw() {
     view.drawBackground('rgb(29, 7, 38)');
 
     // Draw background elements
-    var backgroundAnchorX = gameState == 0 ? 0 : player.phys.pos.x;
-    var backgroundAnchorY = gameState == 0 ? 0 : player.phys.pos.y;
-    // Edit title screen
-    if (gameState == 0) {
-        doodadGrid[doodadGridCrossroad.y + 2][doodadGridCrossroad.x - 3] = buttonW;
-        doodadGrid[doodadGridCrossroad.y + 3][doodadGridCrossroad.x - 4] = buttonA;
-        doodadGrid[doodadGridCrossroad.y + 3][doodadGridCrossroad.x - 3] = buttonS;
-        doodadGrid[doodadGridCrossroad.y + 3][doodadGridCrossroad.x - 2] = buttonD;
-        doodadGrid[doodadGridCrossroad.y + 3][doodadGridCrossroad.x + 3] = buttonMouse;
-    }
+    //var backgroundAnchorX = gameState == 0 ? 0 : player.phys.pos.x;
+    //var backgroundAnchorY = gameState == 0 ? 0 : player.phys.pos.y;
+    var backgroundAnchorX = player.phys.pos.x;
+    var backgroundAnchorY = player.phys.pos.y;
+    // Draw controls
+    var middleGrid = Math.floor(doodadGridSize / 2);
+    if (middleGrid + 2 - totalShifts.y >= 0 && middleGrid + 2 - totalShifts.y < doodadGridSize && middleGrid - 3 - totalShifts.x >= 0 && middleGrid - 3 - totalShifts.x < doodadGridSize)
+        doodadGrid[middleGrid + 2 - totalShifts.y][middleGrid - 3 - totalShifts.x] = buttonW;
+    if (middleGrid + 3 - totalShifts.y >= 0 && middleGrid + 3 - totalShifts.y < doodadGridSize && middleGrid - 4 - totalShifts.x >= 0 && middleGrid - 4 - totalShifts.x < doodadGridSize)
+        doodadGrid[middleGrid + 3 - totalShifts.y][middleGrid - 4 - totalShifts.x] = buttonA;
+    if (middleGrid + 3 - totalShifts.y >= 0 && middleGrid + 3 - totalShifts.y < doodadGridSize && middleGrid - 3 - totalShifts.x >= 0 && middleGrid - 3 - totalShifts.x < doodadGridSize)
+        doodadGrid[middleGrid + 3 - totalShifts.y][middleGrid - 3 - totalShifts.x] = buttonS;
+    if (middleGrid + 3 - totalShifts.y >= 0 && middleGrid + 3 - totalShifts.y < doodadGridSize && middleGrid - 2 - totalShifts.x >= 0 && middleGrid - 2 - totalShifts.x < doodadGridSize)
+        doodadGrid[middleGrid + 3 - totalShifts.y][middleGrid - 2 - totalShifts.x] = buttonD;
+    if (middleGrid + 3 - totalShifts.y >= 0 && middleGrid + 3 - totalShifts.y < doodadGridSize && middleGrid + 3 - totalShifts.x >= 0 && middleGrid + 3 - totalShifts.x < doodadGridSize)
+        doodadGrid[middleGrid + 3 - totalShifts.y][middleGrid + 3 - totalShifts.x] = buttonMouse;
     // Background elements are shifted towards the top-left corner, since their "real" top-left corner is at the middle of the screen
     var doodadY = (Math.floor(backgroundAnchorY / doodadInterval) * doodadInterval) - (screenSize * 0.6);
     for (var y = 0; y < doodadGridSize; y++) {
         var doodadX = (Math.floor(backgroundAnchorX / doodadInterval) * doodadInterval) - (screenSize * 0.6);
         for (var x = 0; x < doodadGridSize; x++) {
             let doodadLocation = view.worldToView({x: doodadX, y: doodadY});
+            if (doodadY )
             if (doodadGrid[y][x]) {
                 doodadGrid[y][x].pos.x = doodadLocation.x;
                 doodadGrid[y][x].pos.y = doodadLocation.y;
@@ -507,6 +519,14 @@ function draw() {
             doodadX += doodadInterval;
         }
         doodadY += doodadInterval;
+    }
+
+    // Draw title screen if game hasn't started
+    if (gameState == 0) {
+        let titleImageViewPosition = view.worldToView(titleImagePosition);
+        titleImage.pos.x = titleImageViewPosition.x;
+        titleImage.pos.y = titleImageViewPosition.y;
+        titleImage.drawTo(g);
     }
 
     // Create floating particles around the player
@@ -590,14 +610,7 @@ function draw() {
         }
     }
 
-    // Draw title screen if game hasn't started
-    if (gameState == 0) {
-        titleImage.pos.x = view.width / 2;
-        titleImage.pos.y = view.height / 4;
-        titleImage.drawTo(g);
-    }
-
-    // Draw health bar if game has been started
+    // Draw health bar if game has started
     if (gameState != 0) {
         // Create health bar animation effects
         if (Math.random() < 0.06) {
@@ -656,7 +669,7 @@ function draw() {
     // Draw mouse
     view.drawMouse();
 
-    // Show frames per second if game has been started
+    // Show frames per second if game has started
     if (gameState != 0) {
         timestamps.push(time);
         while (timestamps[0] < time - 1000) {
@@ -669,14 +682,15 @@ function draw() {
         g.fillText(fps + " fps", 6, 16);
     }
 
+    // Start the game
+    if (gameState == 0 && Math.sqrt((player.phys.pos.x * player.phys.pos.x) + (player.phys.pos.y * player.phys.pos.y)) > 2000) {
+        gameState = 1;
+    }
+
     requestAnimationFrame(draw);
 }
 
-view.x = player.phys.pos.x - view.width / 2;
-view.y = player.phys.pos.y - view.height / 2;
+// Bring view to player for title screen
+//view.x = player.phys.pos.x - view.width / 2;
+//view.y = player.phys.pos.y - view.height / 2;
 draw();
-/*
-WebFont.load({
-	google: {families: 'Frijole'},
-  	active: draw
-});*/
