@@ -85,18 +85,16 @@ var finishTime = NaN;
 
 function stateTransition(toState) {
     if (toState == 0) {
-        gameState = 0;
         startTime = NaN;
         finishTime = NaN;
     } else if (toState == 1) {
-        gameState = 1;
         startTime = Date.now();
     } else if (toState == 2) {
-        gameState = 2;
         finishTime = Date.now();
     } else {
         throw "Unknown gameState " + toState;
     }
+    gameState = toState;
 }
 
 function sound(src) {
